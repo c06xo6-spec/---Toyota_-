@@ -411,7 +411,7 @@
   <!-- STEP 3: 顧問對話 -->
   <section class="panel" data-panel="3">
     <h2>問問油轉電顧問</h2>
-    <p class="sub">AI 已經讀過你剛剛的用車診斷與試算結果，可以直接問任何疑慮。</p>
+    <p class="sub">顧問已讀取你剛才的用車診斷與成本試算。直接問續航、充電、成本或保養，回答會引用你的個人化結果。</p>
  
     <div class="chat-shell">
       <div class="chat-log" id="chatLog"></div>
@@ -681,15 +681,13 @@
     goTo(3);
   });
  
-  /* ---------- step 3: AI chat ---------- */
-  let sampleFn = null;
-  let sampleReady = false;
+  /* ---------- step 3: AI advisor — standalone demo ---------- */
   const chatLog = document.getElementById('chatLog');
   const chatInput = document.getElementById('chatInput');
   const chatSend = document.getElementById('chatSend');
   const suggestRow = document.getElementById('suggestRow');
   let chatInited = false;
- 
+
   function addMsg(role, text){
     const div = document.createElement('div');
     div.className = 'msg ' + role;
@@ -698,104 +696,90 @@
     chatLog.scrollTop = chatLog.scrollHeight;
     return div;
   }
-  function addSysMsg(text){
-    const div = document.createElement('div');
-    div.className = 'msg sys';
-    div.textContent = text;
-    chatLog.appendChild(div);
-    chatLog.scrollTop = chatLog.scrollHeight;
+
+  function advisorReply(q){
+    const text = q.toLowerCase();
+    const tier = homeChargeTier();
+    const minB = state.sim ? Math.round(state.sim.minBattery) : 0;
+    const fit = state.sim ? state.sim.fit : 0;
+    const diff = state.tco ? state.tco.diff : 0;
+    const costLine = diff >= 0
+      ? `以你目前的里程與假設，五年試算 bZ4X 約可少 ${fmtNT(diff)}。`
+      : `以目前購車價差假設，五年 bZ4X 約多 ${fmtNT(-diff)}，里程越高時能源成本優勢會更明顯。`;
+
+    if(/山|坡|爬坡/.test(text)){
+      return `山路爬坡確實會增加瞬間耗電，但下坡時電動車可透過回生煞車回收部分能量。以你的假日行程約 ${state.weekendKm} km 來看，模擬最低電量仍約 ${minB}%；真正長途上山前，我會建議先把電充足並預留返程餘裕。`;
+    }
+    if(/車位|充電|充電樁|沒辦法/.test(text)){
+      if(tier === 'home') return `你的條件其實很適合家充：有固定車位時，可以把充電變成「回家插上、隔天出發」的日常習慣。依這次模擬，你的油轉電適配度是 ${fit} 分，充電便利性是主要加分項。`;
+      if(tier === 'mixed') return `你有固定車位，關鍵會是社區是否能完成充電設備申請與施工；一旦建立固定充電方式，日常使用會接近家充情境。建議試乘時同步請顧問協助確認社區充電建置流程。`;
+      return `沒有固定車位不代表不能用電動車，但使用方式會不同。依你的條件，建議先確認住家、公司或固定採買路線上是否有可靠的公共充電點，再決定是否符合你的生活節奏。`;
+    }
+    if(/補助|政府|稅/.test(text)){
+      return `補助與稅費優惠會依年度、地區與政策調整，所以這個 Demo 沒有把特定補助金額直接算進去，避免讓試算失真。正式評估時應以當期政府與 TOYOTA 官方公告為準，再把可適用項目加入五年成本比較。`;
+    }
+    if(/保養|維修/.test(text)){
+      return `這份試算目前用油車每年 NT$8,000、電動車每年 NT$3,000 作示意，主要反映電動車動力系統的例行保養項目通常較少。實際保養仍要看里程、耗材與原廠保養週期，但你可以把「能源＋保養」一起看，而不是只比較車價。`;
+    }
+    if(/省|划算|成本|價格|貴|錢/.test(text)){
+      return costLine + ` 你的年里程約 ${state.tco ? Math.round(state.tco.annualKm).toLocaleString('zh-Hant') : '—'} km；你也可以回到上一頁調整油價與購車價差，看看臨界點怎麼變。`;
+    }
+    if(/續航|沒電|里程|長途/.test(text)){
+      return `依你填寫的使用情境，本週模擬總里程約 ${state.sim ? Math.round(state.sim.totalKm) : '—'} km，單日結束最低電量約 ${minB}%。${minB >= 40 ? '目前屬於相對充裕的使用情境。' : '長途日建議預先安排補能點，會比單看官方續航數字更實際。'}`;
+    }
+    if(/適合|推薦|該不該|要不要/.test(text)){
+      return `系統依你的里程與充電條件算出的油轉電適配度是 ${fit} 分；這不是替你決定要不要換車，而是把最重要的條件攤開來看。對你而言，最值得確認的是「${tier === 'public' ? '公共充電是否能融入固定生活路線' : '實際試乘感受與五年成本是否符合期待'}」。`;
+    }
+    return `我會先從你的真實情境回答：每天約 ${state.dailyKm} km、假日長途約 ${state.weekendKm} km，油轉電適配度 ${fit} 分。你可以問我續航、充電、五年成本、保養或補助，我會用剛才的診斷結果一起判斷。`;
   }
- 
-  function profileSummary(){
-    const housingLabel = {house:'透天／有固定車位', 'apt-fixed':'公寓有固定車位', 'apt-shared':'公寓無固定車位', none:'租屋／無車位'}[state.housing];
-    const moodLabel = state.mood === 'anxious' ? '偏焦慮，需要安撫式溝通' : '偏理性，重視數據與計算';
-    return `【用車診斷】每日通勤 ${state.dailyKm}km，假日長途約 ${state.weekendKm}km，居住條件：${housingLabel}，使用者心態：${moodLabel}。
-【情境模擬】bZ4X 模擬續航 ${RANGE}km，週間最低剩餘電量約 ${state.sim ? Math.round(state.sim.minBattery) : '—'}%。
-【五年成本試算】燃油車五年估計 ${state.tco ? fmtNT(state.tco.fuel5) : '—'}；bZ4X 五年估計 ${state.tco ? fmtNT(state.tco.ev5) : '—'}（已含購車價差 ${fmtNT(state.priceDiff)}）。`;
-  }
- 
-  const SYS_PROMPT = `你是 TOYOTA「油轉電評估精靈」的 AI 顧問，服務對象是猶豫是否從燃油車換購 bZ4X 電動車的現有 TOYOTA 車主。
- 
-原則：
-- 顧問式而非推銷式：多用引導式提問，讓車主自己得出結論，不要一直推銷。
-- 依用戶診斷資料客製化回答，不要給通用制式答案。
-- 若使用者偏焦慮，語氣要安撫、具體、給實際解法；若偏理性，多給數據與計算依據。
-- 回答簡潔，2-4 句話為主，繁體中文，口語自然，不要條列超過必要。
-- 只根據下方提供的使用者資料與一般 bZ4X／電動車公開知識回答，不確定的細節（如精確補助金額）誠實說明「需以官方公告為準」。
- 
-使用者資料：
-${profileSummary()}`;
- 
-  async function initChat(){
+
+  function initChat(){
     if(chatInited) return;
     chatInited = true;
-    try{
-      sampleFn = await claude.use('sample');
-    }catch(e){
-      sampleFn = null;
-    }
-    sampleReady = !!sampleFn;
- 
-    if(!sampleReady){
-      addSysMsg('AI 顧問對話功能需要在支援 Claude 能力的檢視環境中開啟，此處先顯示介面示意。');
-      chatInput.disabled = true;
-      chatSend.disabled = true;
-    }
- 
     const opener = state.mood === 'anxious'
-      ? `嗨，我已經看過你的用車診斷了。你每天大概開 ${state.dailyKm} 公里，這個距離對 bZ4X 來說很輕鬆。想先聊聊你最擔心的是什麼嗎？`
-      : `嗨，我整理了你的用車數據：五年下來油車約 ${state.tco?fmtNT(state.tco.fuel5):'—'}，bZ4X 約 ${state.tco?fmtNT(state.tco.ev5):'—'}。想先從哪個數字聊起？`;
+      ? `嗨，我已經看過你的用車診斷。你每天大約開 ${state.dailyKm} 公里，模擬最低電量約 ${state.sim ? Math.round(state.sim.minBattery) : '—'}%。不用先做決定，你最擔心續航、充電，還是換車成本？`
+      : `嗨，我整理好你的數據了：油轉電適配度 ${state.sim ? state.sim.fit : '—'} 分；五年油車約 ${state.tco?fmtNT(state.tco.fuel5):'—'}，bZ4X 約 ${state.tco?fmtNT(state.tco.ev5):'—'}。你想先拆哪個數字？`;
     addMsg('ai', opener);
- 
-    const suggestions = [
-      '我常跑山路會不會很耗電？',
-      '沒有固定車位真的沒辦法用電動車嗎？',
-      '政府補助大概有多少？',
-      '跟現在的油車比，保養會差很多嗎？'
-    ];
+
+    const suggestions = ['我常跑山路會不會很耗電？','沒有固定車位真的沒辦法用電動車嗎？','政府補助大概有多少？','跟現在的油車比，保養會差很多嗎？'];
     suggestRow.innerHTML = '';
-    suggestions.forEach(s => {
+    suggestions.forEach(txt => {
       const chip = document.createElement('div');
       chip.className = 'suggest-chip';
-      chip.textContent = s;
-      chip.addEventListener('click', () => { if(!chatInput.disabled){ chatInput.value = s; sendChat(); }});
+      chip.textContent = txt;
+      chip.addEventListener('click', () => { chatInput.value = txt; sendChat(); });
       suggestRow.appendChild(chip);
     });
   }
- 
-  async function sendChat(){
+
+  function sendChat(){
     const text = chatInput.value.trim();
-    if(!text || !sampleReady) return;
+    if(!text) return;
     addMsg('user', text);
     state.chatHistory.push({role:'user', content:text});
     chatInput.value = '';
     chatInput.disabled = true;
     chatSend.disabled = true;
- 
+
     const typing = document.createElement('div');
     typing.className = 'msg ai';
     typing.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
     chatLog.appendChild(typing);
     chatLog.scrollTop = chatLog.scrollHeight;
- 
-    try{
-      const turns = [{role:'user', content: SYS_PROMPT}].concat(state.chatHistory);
-      const result = await sampleFn(turns, {modelTier:'default'});
+
+    window.setTimeout(() => {
       typing.remove();
-      const reply = result && result.text ? result.text : '（暫時沒有取得回覆，請再試一次）';
+      const reply = advisorReply(text);
       addMsg('ai', reply);
       state.chatHistory.push({role:'assistant', content:reply});
-    }catch(err){
-      typing.remove();
-      addMsg('ai', '這裡暫時連不上顧問服務，稍後再試試看，或直接跟展間業務聊聊。');
-    }
-    chatInput.disabled = false;
-    chatSend.disabled = false;
-    chatInput.focus();
+      chatInput.disabled = false;
+      chatSend.disabled = false;
+      chatInput.focus();
+    }, 520);
   }
   chatSend.addEventListener('click', sendChat);
   chatInput.addEventListener('keydown', e => { if(e.key === 'Enter') sendChat(); });
- 
+
   document.getElementById('toStep4').addEventListener('click', () => goTo(4));
  
   /* ---------- step 4: booking (mock) ---------- */
