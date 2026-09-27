@@ -147,6 +147,15 @@
   .threshold-line{position:absolute;left:0;right:0;border-top:1px dashed rgba(255,255,255,.35);}
   .sim-note{background:var(--ink-soft);border:1px solid var(--line-dark);border-radius:12px;padding:18px 20px;font-size:13.5px;color:var(--grey-text-dark);line-height:1.8;}
   .sim-note b{color:#fff;}
+  .sim-insight{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin:0 0 28px;}
+  .insight-card{background:linear-gradient(145deg,#171719,#101012);border:1px solid var(--line-dark);border-radius:16px;padding:22px;}
+  .insight-card .mini-label{font-size:11px;color:var(--grey-text-dark);letter-spacing:.08em;font-weight:800;margin-bottom:8px;}
+  .insight-card strong{display:block;font-size:22px;line-height:1.35;margin-bottom:6px;}
+  .insight-card p{font-size:12.5px;color:var(--grey-text-dark);line-height:1.7;margin:0;}
+  .battery-legend{display:flex;gap:14px;flex-wrap:wrap;margin:-6px 0 22px;font-size:11.5px;color:var(--grey-text-dark);}
+  .battery-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--teal);}
+  .battery-legend .warn-dot{background:var(--warn)}.battery-legend .risk-dot{background:var(--red)}
+  @media(max-width:640px){.sim-insight{grid-template-columns:1fr}}
  
   /* ---- TCO ---- */
   .tco-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;}
@@ -161,6 +170,16 @@
   .tco-savings{background:var(--red);border-radius:14px;padding:22px 24px;text-align:center;margin-bottom:30px;}
   .tco-savings b{display:block;font-size:32px;font-weight:900;}
   .tco-savings span{font-size:13px;color:#ffe3e4;}
+  .tco-headline{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:24px;padding:20px 22px;border:1px solid var(--line-dark);border-radius:14px;background:#111113;}
+  .tco-headline .mini-label{font-size:11px;color:var(--grey-text-dark);letter-spacing:.08em;font-weight:800;margin-bottom:5px;}
+  .tco-headline strong{font-size:24px;line-height:1.3;}
+  .tco-headline .annual-km{text-align:right;color:var(--grey-text-dark);font-size:12px}.tco-headline .annual-km b{display:block;color:#fff;font-size:20px;}
+  .tco-card{position:relative;overflow:hidden}.tco-card.ev:before{content:'EV';position:absolute;right:-8px;top:-22px;font-size:80px;font-weight:900;color:rgba(227,6,19,.06)}
+  .tco-card .card-tag{font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--grey-text-dark);margin-bottom:12px;}
+  .cost-bar{height:7px;background:#262629;border-radius:999px;overflow:hidden;margin:4px 0 18px}.cost-bar span{display:block;height:100%;border-radius:999px;background:#777}.ev .cost-bar span{background:var(--red)}
+  .tco-savings{position:relative;overflow:hidden}.tco-savings:after{content:'5Y';position:absolute;right:16px;top:-30px;font-size:110px;font-weight:900;color:rgba(255,255,255,.08)}
+  .tco-savings b,.tco-savings span{position:relative;z-index:1}
+  @media(max-width:560px){.tco-headline{align-items:flex-start;flex-direction:column}.tco-headline .annual-km{text-align:left}}
   .assump-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
   @media (max-width:640px){.assump-grid{grid-template-columns:1fr;}}
  
@@ -306,12 +325,18 @@
       <div class="fit-copy"><div class="section-eyebrow">PERSONAL FIT</div><h3 id="fitTitle">正在分析你的用車輪廓</h3><p id="fitDesc">系統會綜合日常里程、長途需求與充電條件，提供情境化判斷。</p></div>
     </div>
 
+    <div class="sim-insight">
+      <div class="insight-card"><div class="mini-label">THIS WEEK</div><strong id="rangeHeadline">你的日常里程在續航舒適圈內</strong><p id="rangeDetail">依目前條件分析本週用車與充電節奏。</p></div>
+      <div class="insight-card"><div class="mini-label">CHARGING ROUTINE</div><strong id="chargeHeadline">回家即充</strong><p id="chargeDetail">充電方式會依你的停車條件調整。</p></div>
+    </div>
+
     <div class="sim-summary">
       <div class="sim-stat"><b id="simRange">460</b><span>bZ4X 官方測試續航 (km)</span></div>
       <div class="sim-stat"><b id="simWeekKm">—</b><span>本週預估總里程 (km)</span></div>
       <div class="sim-stat"><b id="simMinBattery">—</b><span>週間最低剩餘電量</span></div>
     </div>
  
+    <div class="battery-legend"><span><i></i>充足 40%+</span><span><i class="warn-dot"></i>留意 20–39%</span><span><i class="risk-dot"></i>建議充電 &lt;20%</span></div>
     <div class="week-chart" id="weekChart"></div>
     <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--grey-text-dark);margin-bottom:30px;">
       <span>虛線為 20% 建議充電警示線</span>
@@ -348,17 +373,22 @@
       </div>
     </div>
  
+    <div class="tco-headline">
+      <div><div class="mini-label">YOUR 5-YEAR COST VIEW</div><strong>把「車價」改看成「五年總持有成本」</strong></div>
+      <div class="annual-km">依你的用車習慣推估<b id="annualKmView">— km／年</b></div>
+    </div>
+
     <div class="tco-grid">
       <div class="tco-card fuel">
-        <h4>現有燃油車</h4>
-        <div class="tco-total" id="fuelTotal">—</div>
+        <div class="card-tag">CURRENT · ICE</div><h4>現有燃油車</h4>
+        <div class="tco-total" id="fuelTotal">—</div><div class="cost-bar"><span id="fuelCostBar" style="width:100%"></span></div>
         <div class="tco-line"><span>年均油錢</span><span id="fuelAnnualFuel">—</span></div>
         <div class="tco-line"><span>年均保養</span><span>NT$ 8,000</span></div>
         <div class="tco-line"><span>5 年小計</span><span id="fuelSub">—</span></div>
       </div>
       <div class="tco-card ev">
-        <h4>換購 bZ4X</h4>
-        <div class="tco-total" id="evTotal">—</div>
+        <div class="card-tag">SWITCH · BEV</div><h4>換購 bZ4X</h4>
+        <div class="tco-total" id="evTotal">—</div><div class="cost-bar"><span id="evCostBar" style="width:80%"></span></div>
         <div class="tco-line"><span>購車價差</span><span id="evDiffLine">—</span></div>
         <div class="tco-line"><span>年均電費</span><span id="evAnnualFuel">—</span></div>
         <div class="tco-line"><span>年均保養</span><span>NT$ 3,000</span></div>
@@ -582,6 +612,10 @@
       : (tier === 'mixed'
         ? '你的里程條件適合電動車；若能在固定車位建立穩定充電方式，使用體驗會更完整。'
         : '續航本身不是主要問題，真正影響體驗的是公共充電安排。後續建議把充電便利性一起納入評估。');
+    document.getElementById('rangeHeadline').textContent = minBattery >= 40 ? '你的日常里程在續航舒適圈內' : (minBattery >= 20 ? '平日輕鬆，長途日需要多一點規劃' : '長途日會進入建議充電區');
+    document.getElementById('rangeDetail').textContent = '本週約 ' + Math.round(totalKm) + ' km，最低模擬電量 ' + Math.round(minBattery) + '%；圖表把每天結束時的剩餘電量直接視覺化。';
+    document.getElementById('chargeHeadline').textContent = tier === 'home' ? '回家即充，最省心' : (tier === 'mixed' ? '固定車位，建立充電節奏' : '公共快充，路線規劃優先');
+    document.getElementById('chargeDetail').textContent = tier === 'home' ? '有家充條件時，多數日常不必特別繞去充電站。' : (tier === 'mixed' ? '若社區可完成充電設備建置，日常體驗會接近家充。' : '建議把通勤或採買沿線的充電點變成固定補能節點。');
     state.sim = {tier, minBattery, totalKm, fit};
   }
  
@@ -623,6 +657,10 @@
     document.getElementById('evDiffLine').textContent = fmtNT(state.priceDiff);
     document.getElementById('evAnnualFuel').textContent = fmtNT(annualElecCost);
     document.getElementById('evTotal').textContent = fmtNT(ev5);
+    document.getElementById('annualKmView').textContent = Math.round(annualKm).toLocaleString('zh-Hant') + ' km／年';
+    const maxCost = Math.max(fuel5, ev5, 1);
+    document.getElementById('fuelCostBar').style.width = Math.max(18, fuel5/maxCost*100) + '%';
+    document.getElementById('evCostBar').style.width = Math.max(18, ev5/maxCost*100) + '%';
  
     const diff = fuel5 - ev5;
     const savingsBig = document.getElementById('savingsBig');
