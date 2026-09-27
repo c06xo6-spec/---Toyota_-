@@ -61,7 +61,23 @@
   .step-btn.done{color:#fff;}
   .step-btn:disabled{cursor:not-allowed;opacity:.45;}
  
-  main{padding:40px 0 90px;}
+  main{padding:34px 0 90px;}
+  .hero{position:relative;overflow:hidden;border:1px solid var(--line-dark);border-radius:24px;margin-bottom:42px;padding:44px;background:
+    radial-gradient(circle at 82% 28%,rgba(227,6,19,.24),transparent 30%),
+    linear-gradient(135deg,#171719 0%,#0c0c0e 68%);}
+  .hero:after{content:'';position:absolute;width:310px;height:310px;border:1px solid rgba(255,255,255,.07);border-radius:50%;right:-90px;top:-115px;}
+  .hero-kicker{font-size:11px;font-weight:800;letter-spacing:.16em;color:#ff747d;text-transform:uppercase;margin-bottom:14px;}
+  .hero h1{font-size:clamp(34px,6vw,58px);line-height:1.05;letter-spacing:-.04em;margin:0 0 18px;max-width:680px;font-weight:900;}
+  .hero h1 em{font-style:normal;color:var(--red);}
+  .hero-copy{font-size:15px;line-height:1.8;color:#b7b5b2;max-width:590px;margin:0 0 28px;}
+  .hero-proof{display:flex;gap:10px;flex-wrap:wrap;}
+  .proof-pill{font-size:12px;color:#e8e7e5;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);padding:8px 12px;border-radius:999px;}
+  .section-eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--red);margin-bottom:10px;}
+  .fit-card{display:grid;grid-template-columns:150px 1fr;gap:28px;align-items:center;background:linear-gradient(135deg,#171719,#111113);border:1px solid var(--line-dark);border-radius:18px;padding:26px;margin-bottom:30px;}
+  .fit-score{width:130px;height:130px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:10px solid rgba(227,6,19,.2);box-shadow:inset 0 0 0 3px var(--red);}
+  .fit-score b{font-size:38px;line-height:1;font-weight:900}.fit-score span{font-size:11px;color:var(--grey-text-dark);margin-top:5px}
+  .fit-copy h3{margin:0 0 8px;font-size:20px}.fit-copy p{margin:0;color:var(--grey-text-dark);font-size:13.5px;line-height:1.75}
+  @media(max-width:560px){.hero{padding:30px 24px}.fit-card{grid-template-columns:1fr}.fit-score{margin:auto}}
   .panel{display:none;}
   .panel.active{display:block;animation:fade .35s ease;}
   @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
@@ -213,8 +229,19 @@
  
   <!-- STEP 0: 診斷 -->
   <section class="panel active" data-panel="0">
+    <div class="hero">
+      <div class="hero-kicker">TOYOTA ELECTRIFIED EXPERIENCE</div>
+      <h1>不是問你要不要換電車。<br>先看看<em>電車適不適合你。</em></h1>
+      <p class="hero-copy">從每天真正開的里程、停車條件，到你最在意的成本與續航，用一段個人化體驗，把「油轉電」從選車問題變成生活方式的判斷。</p>
+      <div class="hero-proof">
+        <span class="proof-pill">約 3 分鐘完成</span>
+        <span class="proof-pill">依真實用車情境模擬</span>
+        <span class="proof-pill">五年成本一次比較</span>
+      </div>
+    </div>
+    <div class="section-eyebrow">01 · YOUR DRIVING PROFILE</div>
     <h2>先聊聊你的日常用車</h2>
-    <p class="sub">3 分鐘回答幾個問題，AI 會依你的真實用車型態，模擬換成 bZ4X 之後的續航與花費，不套用統一假設。</p>
+    <p class="sub">不用先懂電動車。回答幾個日常問題，我們會把你的使用情境轉成看得懂的續航與成本結果。</p>
  
     <div class="field">
       <label>平常上下班／通勤，一天大約開多少公里？</label>
@@ -274,6 +301,11 @@
     <h2>一週用車情境模擬</h2>
     <p class="sub" id="simSub">以你的日常里程換算成 bZ4X 電量消耗，看看一週下來電量餘裕夠不夠。</p>
  
+    <div class="fit-card">
+      <div class="fit-score"><b id="fitScore">—</b><span>油轉電適配度</span></div>
+      <div class="fit-copy"><div class="section-eyebrow">PERSONAL FIT</div><h3 id="fitTitle">正在分析你的用車輪廓</h3><p id="fitDesc">系統會綜合日常里程、長途需求與充電條件，提供情境化判斷。</p></div>
+    </div>
+
     <div class="sim-summary">
       <div class="sim-stat"><b id="simRange">460</b><span>bZ4X 官方測試續航 (km)</span></div>
       <div class="sim-stat"><b id="simWeekKm">—</b><span>本週預估總里程 (km)</span></div>
@@ -535,7 +567,22 @@
     }
     document.getElementById('simSub').textContent = `依你填寫的每日 ${state.dailyKm} km 通勤與假日 ${state.weekendKm} km 長途，換算成 bZ4X 電量消耗如下：`;
  
-    state.sim = {tier, minBattery, totalKm};
+    let fit = 58;
+    if(tier === 'home') fit += 25;
+    else if(tier === 'mixed') fit += 15;
+    else fit -= 8;
+    if(state.dailyKm <= 60) fit += 8;
+    if(state.weekendKm <= 220) fit += 7;
+    if(minBattery < 20) fit -= 10;
+    fit = Math.max(35, Math.min(96, Math.round(fit)));
+    document.getElementById('fitScore').textContent = fit;
+    document.getElementById('fitTitle').textContent = fit >= 80 ? '你的日常情境與電動車高度契合' : (fit >= 65 ? '大多數日常情境都適合油轉電' : '可以油轉電，但充電方式是關鍵');
+    document.getElementById('fitDesc').textContent = tier === 'home'
+      ? '你具備固定充電條件，加上目前的里程需求，日常使用幾乎不需要特別改變習慣。接下來最值得看的，是五年成本差異。'
+      : (tier === 'mixed'
+        ? '你的里程條件適合電動車；若能在固定車位建立穩定充電方式，使用體驗會更完整。'
+        : '續航本身不是主要問題，真正影響體驗的是公共充電安排。後續建議把充電便利性一起納入評估。');
+    state.sim = {tier, minBattery, totalKm, fit};
   }
  
   document.getElementById('toStep2').addEventListener('click', () => {
