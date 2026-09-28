@@ -181,6 +181,14 @@
   .tco-savings b{display:block;font-size:32px;font-weight:900;}
   .tco-savings.running-savings{background:linear-gradient(135deg,#087f6b,#0b9a7d);box-shadow:0 10px 30px rgba(8,127,107,.18);}
   .tco-savings.running-savings span{color:#e1fff8;}
+  .tco-period-badge{
+    display:inline-flex;align-items:center;justify-content:center;align-self:center;
+    min-width:92px;margin:0 auto 10px;padding:6px 13px;border-radius:999px;
+    background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.38);
+    color:#fff!important;font-size:13px!important;font-weight:900;letter-spacing:.12em;
+    line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.16);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+  }
   .tco-savings span{font-size:13px;color:#ffe3e4;}
   .tco-savings.running-savings{background:linear-gradient(135deg,#087f5b,#0a9b70);box-shadow:0 10px 28px rgba(8,127,91,.18);}
   .tco-savings.running-savings span{color:#dcfff3;}
@@ -500,13 +508,14 @@
     </div>
  
     <div class="tco-savings">
+      <span class="tco-period-badge">5 YEARS</span>
       <b id="savingsBig">—</b>
       <span id="savingsSub">五年累積差額（含購車價差後估算）</span>
     </div>
 
     <div class="tco-savings running-savings" style="margin-top:12px;">
       <div style="display:flex;flex-direction:column;gap:4px;">
-        <span style="font-size:11px;letter-spacing:.09em;">5-YEAR RUNNING COST SAVINGS</span>
+        <span class="tco-period-badge">5 YEARS</span>
         <b id="runningSavingsBig">—</b>
         <span id="runningSavingsSub">不含購車價格，只比較五年能源、保養與稅費</span>
       </div>
