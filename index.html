@@ -72,6 +72,16 @@
   .hero-copy{font-size:15px;line-height:1.8;color:#b7b5b2;max-width:590px;margin:0 0 28px;}
   .hero-proof{display:flex;gap:10px;flex-wrap:wrap;}
   .proof-pill{font-size:12px;color:#e8e7e5;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);padding:8px 12px;border-radius:999px;}
+  .known-profile{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin:0 0 34px;}
+  .profile-card{background:linear-gradient(145deg,#19191c,#111113);border:1px solid var(--line-dark);border-radius:18px;padding:24px;}
+  .profile-card.highlight{border-color:rgba(227,6,19,.45);background:linear-gradient(145deg,rgba(227,6,19,.11),#111113 55%);}
+  .profile-label{font-size:10.5px;font-weight:800;letter-spacing:.12em;color:#ff747d;margin-bottom:10px;}
+  .profile-title{font-size:21px;font-weight:900;margin-bottom:7px;}
+  .profile-desc{font-size:12.5px;line-height:1.7;color:var(--grey-text-dark);margin:0 0 16px;}
+  .data-chips{display:flex;gap:8px;flex-wrap:wrap}.data-chip{font-size:11.5px;padding:7px 10px;border-radius:8px;background:rgba(255,255,255,.055);color:#ddd;border:1px solid rgba(255,255,255,.07)}
+  .privacy-note{display:flex;gap:10px;align-items:flex-start;margin:0 0 38px;padding:14px 16px;border-left:3px solid var(--red);background:rgba(255,255,255,.025);color:var(--grey-text-dark);font-size:12px;line-height:1.7}
+  .question-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}.question-head .num{font-size:10px;font-weight:900;color:var(--red);border:1px solid rgba(227,6,19,.5);border-radius:999px;padding:3px 7px}
+  @media(max-width:640px){.known-profile{grid-template-columns:1fr}}
   .section-eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--red);margin-bottom:10px;}
   .fit-card{display:grid;grid-template-columns:150px 1fr;gap:28px;align-items:center;background:linear-gradient(135deg,#171719,#111113);border:1px solid var(--line-dark);border-radius:18px;padding:26px;margin-bottom:30px;}
   .fit-score{width:130px;height:130px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:10px solid rgba(227,6,19,.2);box-shadow:inset 0 0 0 3px var(--red);}
@@ -249,21 +259,41 @@
   <!-- STEP 0: 診斷 -->
   <section class="panel active" data-panel="0">
     <div class="hero">
-      <div class="hero-kicker">TOYOTA ELECTRIFIED EXPERIENCE</div>
-      <h1>不是問你要不要換電車。<br>先看看<em>電車適不適合你。</em></h1>
-      <p class="hero-copy">從每天真正開的里程、停車條件，到你最在意的成本與續航，用一段個人化體驗，把「油轉電」從選車問題變成生活方式的判斷。</p>
+      <div class="hero-kicker">TOYOTA EV TRANSITION ADVISOR</div>
+      <h1>Toyota 已經認識你的車。<br>接下來，想更了解<em>你的生活。</em></h1>
+      <p class="hero-copy">我們先從既有車主資料建立起點，再由你親自確認生活條件。不是替你決定要不要換 EV，而是一起看清楚：換成 bZ4X 後，日常會發生什麼改變。</p>
       <div class="hero-proof">
+        <span class="proof-pill">Toyota 車主資料作為起點</span>
+        <span class="proof-pill">生活條件由你確認</span>
         <span class="proof-pill">約 3 分鐘完成</span>
-        <span class="proof-pill">依真實用車情境模擬</span>
-        <span class="proof-pill">五年成本一次比較</span>
       </div>
     </div>
-    <div class="section-eyebrow">01 · YOUR DRIVING PROFILE</div>
-    <h2>先聊聊你的日常用車</h2>
-    <p class="sub">不用先懂電動車。回答幾個日常問題，我們會把你的使用情境轉成看得懂的續航與成本結果。</p>
+    <div class="section-eyebrow">01 · UNDERSTAND</div>
+    <h2>先從 Toyota 已知的你開始</h2>
+    <p class="sub">以下為 PoC 示意的車主起始輪廓。正式服務可由會員／CDP 帶入既有資料，再由車主確認與補充 Toyota 不知道的生活條件。</p>
+
+    <div class="known-profile">
+      <div class="profile-card highlight">
+        <div class="profile-label">TOYOTA 已知 · DEMO PROFILE</div>
+        <div class="profile-title">RAV4 Hybrid 車主</div>
+        <p class="profile-desc">既有車主關係資料可作為油轉電對話的個人化起點，不需要每次都從零開始。</p>
+        <div class="data-chips"><span class="data-chip">現有車款 RAV4 Hybrid</span><span class="data-chip">既有 Toyota 車主</span><span class="data-chip">會員識別已完成</span></div>
+      </div>
+      <div class="profile-card">
+        <div class="profile-label">需要你告訴我們</div>
+        <div class="profile-title">生活條件才是關鍵</div>
+        <p class="profile-desc">每天開多遠？是否常跑長途？家裡能不能充電？這些不由資料替你猜，而是由你自己確認。</p>
+        <div class="data-chips"><span class="data-chip">日常里程</span><span class="data-chip">長途頻率</span><span class="data-chip">停車／充電</span><span class="data-chip">主要疑慮</span></div>
+      </div>
+    </div>
+    <div class="privacy-note"><span>ⓘ</span><span><b style="color:#fff">你掌控最後答案。</b> CDP 只作為個人化起點；關鍵生活條件仍由你確認或修改，避免讓系統替你做決定。</span></div>
+
+    <div class="section-eyebrow">CONFIRM YOUR LIFE</div>
+    <h2>補充 Toyota 還不知道的事</h2>
+    <p class="sub">不用先懂電動車。回答幾個日常問題，我們會把你的真實使用方式轉成一週 EV 生活情境。</p>
  
     <div class="field">
-      <label>平常上下班／通勤，一天大約開多少公里？</label>
+      <div class="question-head"><span class="num">01</span><label style="margin:0">平常上下班／通勤，一天大約開多少公里？</label></div>
       <div class="slider-row">
         <input type="range" id="dailyKm" min="5" max="100" value="30">
         <div class="slider-val"><span id="dailyKmVal">30</span> km</div>
@@ -272,7 +302,7 @@
     </div>
  
     <div class="field">
-      <label>假日會不會有長途出遊？大約多遠？</label>
+      <div class="question-head"><span class="num">02</span><label style="margin:0">假日會不會有長途出遊？大約多遠？</label></div>
       <div class="slider-row">
         <input type="range" id="weekendKm" min="0" max="400" step="10" value="80">
         <div class="slider-val"><span id="weekendKmVal">80</span> km</div>
@@ -281,7 +311,7 @@
     </div>
  
     <div class="field">
-      <label>居住與停車條件</label>
+      <div class="question-head"><span class="num">03</span><label style="margin:0">居住與停車條件</label></div>
       <div class="option-grid" id="housingOpts">
         <div class="opt sel" data-val="house">
           <b>透天／有固定車位</b>可自行安裝充電樁，晚上在家充電最方便
@@ -299,19 +329,19 @@
     </div>
  
     <div class="field">
-      <label>目前的心情比較接近？</label>
+      <div class="question-head"><span class="num">04</span><label style="margin:0">目前最想先解決哪種疑慮？</label></div>
       <div class="option-grid" id="moodOpts">
         <div class="opt sel" data-val="anxious">
-          <b>有點焦慮</b>擔心半路沒電、找不到充電站
+          <b>充電／續航比較讓我擔心</b>想先知道日常使用會不會需要改變
         </div>
         <div class="opt" data-val="analytical">
-          <b>想先看數字</b>划不划算比較重要，感受其次
+          <b>成本比較是我的重點</b>想先知道換成 EV 後五年到底差多少
         </div>
       </div>
     </div>
  
     <div class="btn-row">
-      <button class="btn btn-primary" id="toStep1">產生我的用車輪廓 →</button>
+      <button class="btn btn-primary" id="toStep1">模擬我的一週 EV 生活 →</button>
     </div>
   </section>
  
