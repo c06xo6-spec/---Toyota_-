@@ -395,11 +395,13 @@
         </div>
       </div>
       <div class="field">
-        <label>bZ4X 與現有油車的購車價差（示意）</label>
-        <div class="slider-row">
-          <input type="range" id="priceDiff" min="0" max="400000" step="10000" value="150000">
-          <div class="slider-val" style="min-width:100px;"><span id="priceDiffVal">15</span> 萬</div>
+        <label>購車價格比較</label>
+        <div style="border:1px solid var(--line-dark);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,.025);">
+          <div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:9px;"><span style="color:var(--grey-text-dark)">Corolla Cross<br><small>高階車型比較基準價</small></span><b>NT$ 989,000</b></div>
+          <div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:12px;"><span style="color:var(--grey-text-dark)">bZ4X<br><small>官網建議售價</small></span><b>NT$ 1,280,000</b></div>
+          <div style="border-top:1px solid var(--line-dark);padding-top:12px;display:flex;justify-content:space-between;align-items:center;"><span>初始購車價差</span><b style="color:#ff747d;font-size:20px;">+NT$ 291,000</b></div>
         </div>
+        <div class="hint">採該車系官網高階車型建議售價，以降低不同配備等級造成的價格比較落差；實際配備仍依各車型規格為準。</div>
       </div>
     </div>
  
@@ -505,7 +507,7 @@
     housing: 'house',
     mood: 'anxious',
     fuelPrice: 30,
-    priceDiff: 150000,
+    priceDiff: 291000,
     tco: null,
     sim: null,
     chatHistory: []
@@ -656,15 +658,9 @@
  
   /* ---------- step 2: TCO ---------- */
   const fuelPriceEl = document.getElementById('fuelPrice');
-  const priceDiffEl = document.getElementById('priceDiff');
   fuelPriceEl.addEventListener('input', () => {
     state.fuelPrice = +fuelPriceEl.value;
     document.getElementById('fuelPriceVal').textContent = state.fuelPrice;
-    runTCO();
-  });
-  priceDiffEl.addEventListener('input', () => {
-    state.priceDiff = +priceDiffEl.value;
-    document.getElementById('priceDiffVal').textContent = Math.round(state.priceDiff/10000);
     runTCO();
   });
  
@@ -700,7 +696,7 @@
       savingsSub.textContent = '五年累積下來，換購 bZ4X 估計比續用油車更省（已計入購車價差）';
     } else {
       savingsBig.textContent = fmtNT(-diff) + ' 較高';
-      savingsSub.textContent = '以目前假設的購車價差計算，五年持有成本略高於油車，隨里程增加會逐漸拉近';
+      savingsSub.textContent = '依目前官網售價價差計算，五年持有成本仍較高；隨里程增加，能源與保養成本差距會逐漸拉近';
     }
  
     state.tco = {annualKm, annualFuelCost, fuel5, annualElecCost, ev5, diff};
@@ -735,7 +731,7 @@
     const diff = state.tco ? state.tco.diff : 0;
     const costLine = diff >= 0
       ? `以你目前的里程與假設，五年試算 bZ4X 約可少 ${fmtNT(diff)}。`
-      : `以目前購車價差假設，五年 bZ4X 約多 ${fmtNT(-diff)}，里程越高時能源成本優勢會更明顯。`;
+      : `依目前官網售價帶入的購車價差，五年 bZ4X 約多 ${fmtNT(-diff)}；里程越高時，能源成本優勢會更明顯。`;
 
     if(/山|坡|爬坡/.test(text)){
       return `山路爬坡確實會增加瞬間耗電，但下坡時電動車可透過回生煞車回收部分能量。以你的假日行程約 ${state.weekendKm} km 來看，模擬最低電量仍約 ${minB}%；真正長途上山前，我會建議先把電充足並預留返程餘裕。`;
@@ -752,7 +748,7 @@
       return `這份試算目前用油車每年 NT$8,000、電動車每年 NT$3,000 作示意，主要反映電動車動力系統的例行保養項目通常較少。實際保養仍要看里程、耗材與原廠保養週期，但你可以把「能源＋保養」一起看，而不是只比較車價。`;
     }
     if(/省|划算|成本|價格|貴|錢/.test(text)){
-      return costLine + ` 你的年里程約 ${state.tco ? Math.round(state.tco.annualKm).toLocaleString('zh-Hant') : '—'} km；你也可以回到上一頁調整油價與購車價差，看看臨界點怎麼變。`;
+      return costLine + ` 你的年里程約 ${state.tco ? Math.round(state.tco.annualKm).toLocaleString('zh-Hant') : '—'} km；購車價差已依 Demo 設定的 Toyota 官網售價自動帶入，你可以調整油價觀察結果怎麼變。`;
     }
     if(/續航|沒電|里程|長途/.test(text)){
       return `依你填寫的使用情境，本週模擬總里程約 ${state.sim ? Math.round(state.sim.totalKm) : '—'} km，單日結束最低電量約 ${minB}%。${minB >= 40 ? '目前屬於相對充裕的使用情境。' : '長途日建議預先安排補能點，會比單看官方續航數字更實際。'}`;
