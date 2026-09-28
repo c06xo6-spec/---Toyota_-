@@ -390,10 +390,11 @@
       <label for="tcoVehicleSelect">比較參考車款</label>
       <select id="tcoVehicleSelect" style="width:100%;">
         <option value="rav4-hybrid">RAV4 Hybrid（目前車主）</option>
+        <option value="rav4-gasoline">RAV4 汽油</option>
         <option value="altis">ALTIS</option>
         <option value="altis-hybrid">ALTIS Hybrid</option>
         <option value="yaris-legacy">YARIS（歷史車款）</option>
-        <option value="corolla-cross">COROLLA CROSS</option>
+        <option value="corolla-cross-gasoline">COROLLA CROSS 汽油</option>
         <option value="vios">VIOS</option>
         <option value="corolla-cross-hybrid">COROLLA CROSS Hybrid 旗艦</option>
         <option value="corolla-cross-gr-hybrid">COROLLA CROSS Hybrid GR SPORT</option>
@@ -430,8 +431,9 @@
 
     <div class="tco-grid">
       <div class="tco-card fuel">
-        <div class="card-tag">CURRENT · HEV</div><h4 id="currentTcoVehicleName">現有車款</h4>
+        <div class="card-tag" id="currentPowertrainTag">CURRENT</div><h4 id="currentTcoVehicleName">現有車款</h4>
         <div class="tco-total" id="fuelTotal">—</div><div class="cost-bar"><span id="fuelCostBar" style="width:100%"></span></div>
+        <div class="tco-line"><span>平均油耗</span><span id="currentFuelEff">—</span></div>
         <div class="tco-line"><span>年均油錢</span><span id="fuelAnnualFuel">—</span></div>
         <div class="tco-line"><span>年均保養</span><span>NT$ 8,000</span></div>
         <div class="tco-line"><span>使用牌照稅／年</span><span id="currentLicenseTax">—</span></div>
@@ -546,13 +548,14 @@
   const EV_MAINT = 3000;
   // Demo vehicle master: in production these fields can come from Toyota product/CDP data.
   const VEHICLES = {
-    'rav4-hybrid': {name:'RAV4 Hybrid', engineCc:2487, fuel:'gasoline', referencePrice:1490000, priceBasis:'現行官網高階車型比較基準價'},
+    'rav4-hybrid': {name:'RAV4 Hybrid', engineCc:2487, fuel:'gasoline', powertrain:'HYBRID', fuelEff:21.4, referencePrice:1490000, priceBasis:'現行 Hybrid 高階車型比較基準價'},
+    'rav4-gasoline': {name:'RAV4 汽油', engineCc:1987, fuel:'gasoline', powertrain:'汽油', fuelEff:15.1, referencePrice:1130000, priceBasis:'現行汽油高階車型比較基準價'},
     'altis': {name:'ALTIS', engineCc:1798, fuel:'gasoline', referencePrice:815000, priceBasis:'現行汽油車型高階比較基準價'},
     'altis-hybrid': {name:'ALTIS Hybrid', engineCc:1798, fuel:'gasoline', referencePrice:895000, priceBasis:'現行 Hybrid 高階比較基準價'},
     'yaris-legacy': {name:'YARIS', engineCc:1496, fuel:'gasoline', referencePrice:795000, priceBasis:'現行同級替代參考：YARiS CROSS 高階車型', substituteName:'YARiS CROSS'},
-    'corolla-cross': {name:'COROLLA CROSS', engineCc:1798, fuel:'gasoline', referencePrice:869000, priceBasis:'現行汽油車型高階比較基準價'},
-    'corolla-cross-hybrid': {name:'COROLLA CROSS Hybrid 旗艦', engineCc:1798, fuel:'gasoline', referencePrice:989000, priceBasis:'現行 Hybrid 高階比較基準價'},
-    'corolla-cross-gr-hybrid': {name:'COROLLA CROSS Hybrid GR SPORT', engineCc:1798, fuel:'gasoline', referencePrice:1035000, priceBasis:'現行 Hybrid GR SPORT 比較基準價'},
+    'corolla-cross-gasoline': {name:'COROLLA CROSS 汽油', engineCc:1798, fuel:'gasoline', powertrain:'汽油', fuelEff:14.2, referencePrice:889000, priceBasis:'現行汽油高階車型比較基準價'},
+    'corolla-cross-hybrid': {name:'COROLLA CROSS Hybrid 旗艦', engineCc:1798, fuel:'gasoline', powertrain:'HYBRID', fuelEff:23.5, referencePrice:989000, priceBasis:'現行 Hybrid 高階比較基準價'},
+    'corolla-cross-gr-hybrid': {name:'COROLLA CROSS Hybrid GR SPORT', engineCc:1798, fuel:'gasoline', powertrain:'HYBRID', fuelEff:23.5, referencePrice:1035000, priceBasis:'現行 Hybrid GR SPORT 比較基準價'},
     'vios': {name:'VIOS', engineCc:1496, fuel:'gasoline', referencePrice:675000, priceBasis:'現行官網高階車型比較基準價'},
     'wish-legacy': {name:'WISH', engineCc:1987, fuel:'gasoline', referencePrice:2960000, priceBasis:'現行多人乘載替代參考：SIENNA 高階車型', substituteName:'SIENNA'},
     'camry-l-legacy': {name:'CAMRY-L', engineCc:1987, fuel:'gasoline', referencePrice:1250000, priceBasis:'現行同級替代參考：CAMRY 高階車型', substituteName:'CAMRY'},
@@ -750,7 +753,8 @@
     const priceDiffView = document.getElementById('purchasePriceDiff');
     priceDiffView.textContent = state.priceDiff > 0 ? ('bZ4X 高 ' + fmtNT(state.priceDiff)) : state.priceDiff < 0 ? ('bZ4X 低 ' + fmtNT(Math.abs(state.priceDiff))) : '兩車同價';
     const annualKm = (state.dailyKm*5 + state.weekendKm*2) * 52;
-    const annualFuelCost = (annualKm / FUEL_EFF) * state.fuelPrice;
+    const vehicleFuelEff = vehicle.fuelEff || FUEL_EFF;
+    const annualFuelCost = (annualKm / vehicleFuelEff) * state.fuelPrice;
     const fuel5 = (annualFuelCost + FUEL_MAINT + currentLicenseTax + currentRoadFee) * 5;
  
     const tier = homeChargeTier();
@@ -759,6 +763,8 @@
     // Demo TCO uses current EV tax/fee treatment as the displayed baseline.
     const ev5 = state.priceDiff + (annualElecCost + EV_MAINT + evLicenseTax + evRoadFee) * 5;
  
+    document.getElementById('currentPowertrainTag').textContent = 'CURRENT · ' + (vehicle.powertrain || '汽油');
+    document.getElementById('currentFuelEff').textContent = vehicleFuelEff.toFixed(1) + ' km/L';
     document.getElementById('fuelAnnualFuel').textContent = fmtNT(annualFuelCost);
     document.getElementById('fuelSub').textContent = fmtNT(fuel5);
     document.getElementById('fuelTotal').textContent = fmtNT(fuel5);
