@@ -275,9 +275,17 @@
     <div class="known-profile">
       <div class="profile-card highlight">
         <div class="profile-label">TOYOTA 已知 · DEMO PROFILE</div>
-        <div class="profile-title">RAV4 Hybrid 車主</div>
-        <p class="profile-desc">既有車主關係資料可作為油轉電對話的個人化起點，不需要每次都從零開始。</p>
-        <div class="data-chips"><span class="data-chip">現有車款 RAV4 Hybrid</span><span class="data-chip">既有 Toyota 車主</span><span class="data-chip">會員識別已完成</span></div>
+        <div class="profile-title" id="profileVehicleTitle">RAV4 Hybrid 車主</div>
+        <p class="profile-desc">既有車主關係資料可作為油轉電對話的個人化起點，不需要每次都從零開始。Demo 可切換車款，模擬 CDP 辨識到不同既有車主後的個人化結果。</p>
+        <div class="field" style="margin:16px 0 14px;">
+          <label for="demoVehicleSelect">DEMO 車主目前車款</label>
+          <select id="demoVehicleSelect" style="width:100%;">
+            <option value="rav4-hybrid">RAV4 Hybrid</option>
+            <option value="corolla-cross-hybrid">Corolla Cross Hybrid 旗艦</option>
+            <option value="corolla-cross-gr-hybrid">Corolla Cross Hybrid GR SPORT</option>
+          </select>
+        </div>
+        <div class="data-chips"><span class="data-chip" id="profileVehicleChip">現有車款 RAV4 Hybrid</span><span class="data-chip" id="profileEngineChip">排氣量 2,487 c.c.</span><span class="data-chip">會員識別已完成</span></div>
       </div>
       <div class="profile-card">
         <div class="profile-label">需要你告訴我們</div>
@@ -412,7 +420,7 @@
 
     <div class="tco-grid">
       <div class="tco-card fuel">
-        <div class="card-tag">CURRENT · ICE</div><h4>現有燃油車</h4>
+        <div class="card-tag">CURRENT · HEV</div><h4 id="currentTcoVehicleName">現有車款</h4>
         <div class="tco-total" id="fuelTotal">—</div><div class="cost-bar"><span id="fuelCostBar" style="width:100%"></span></div>
         <div class="tco-line"><span>年均油錢</span><span id="fuelAnnualFuel">—</span></div>
         <div class="tco-line"><span>年均保養</span><span>NT$ 8,000</span></div>
@@ -572,6 +580,21 @@
   stepBtns.forEach(b => b.addEventListener('click', () => { if(!b.disabled) goTo(+b.dataset.step); }));
   document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => goTo(+b.dataset.back)));
  
+  /* ---------- demo vehicle profile ---------- */
+  const demoVehicleSelect = document.getElementById('demoVehicleSelect');
+  function syncVehicleProfile(){
+    const vehicle = VEHICLES[state.vehicleKey];
+    document.getElementById('profileVehicleTitle').textContent = vehicle.name + ' 車主';
+    document.getElementById('profileVehicleChip').textContent = '現有車款 ' + vehicle.name;
+    document.getElementById('profileEngineChip').textContent = '排氣量 ' + vehicle.engineCc.toLocaleString('zh-Hant') + ' c.c.';
+  }
+  demoVehicleSelect.addEventListener('change', () => {
+    state.vehicleKey = demoVehicleSelect.value;
+    syncVehicleProfile();
+    if(state.step >= 2) runTCO();
+  });
+  syncVehicleProfile();
+
   /* ---------- step 0 inputs ---------- */
   const dailyKmEl = document.getElementById('dailyKm');
   const weekendKmEl = document.getElementById('weekendKm');
@@ -708,6 +731,7 @@
     const evRoadFee = 0; // electric vehicles currently exempt
     state.priceDiff = BZ4X.referencePrice - vehicle.referencePrice;
     document.getElementById('currentVehicleName').textContent = vehicle.name;
+    document.getElementById('currentTcoVehicleName').textContent = vehicle.name;
     document.getElementById('currentVehiclePrice').textContent = fmtNT(vehicle.referencePrice);
     document.getElementById('bz4xPrice').textContent = fmtNT(BZ4X.referencePrice);
     document.getElementById('currentLicenseTax').textContent = fmtNT(currentLicenseTax);
