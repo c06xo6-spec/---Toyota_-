@@ -391,7 +391,7 @@
       <select id="tcoVehicleSelect" style="width:100%;">
         <option value="rav4-hybrid">RAV4 Hybrid（目前車主）</option>
         <option value="rav4-gasoline">RAV4 汽油</option>
-        <option value="altis">ALTIS</option>
+        <option value="altis-gasoline">ALTIS 汽油</option>
         <option value="altis-hybrid">ALTIS Hybrid</option>
         <option value="yaris-legacy">YARIS（歷史車款）</option>
         <option value="corolla-cross-gasoline">COROLLA CROSS 汽油</option>
@@ -399,6 +399,8 @@
         <option value="corolla-cross-hybrid">COROLLA CROSS Hybrid 旗艦</option>
         <option value="corolla-cross-gr-hybrid">COROLLA CROSS Hybrid GR SPORT</option>
         <option value="wish-legacy">WISH（歷史車款）</option>
+        <option value="camry-gasoline">CAMRY 汽油</option>
+        <option value="camry-hybrid">CAMRY Hybrid</option>
         <option value="camry-l-legacy">CAMRY-L（歷史車款）</option>
         <option value="sienta-legacy">SIENTA（歷史車款）</option>
       </select>
@@ -550,15 +552,17 @@
   const VEHICLES = {
     'rav4-hybrid': {name:'RAV4 Hybrid', engineCc:2487, fuel:'gasoline', powertrain:'HYBRID', fuelEff:21.4, referencePrice:1490000, priceBasis:'現行 Hybrid 高階車型比較基準價'},
     'rav4-gasoline': {name:'RAV4 汽油', engineCc:1987, fuel:'gasoline', powertrain:'汽油', fuelEff:15.1, referencePrice:1130000, priceBasis:'現行汽油高階車型比較基準價'},
-    'altis': {name:'ALTIS', engineCc:1798, fuel:'gasoline', referencePrice:815000, priceBasis:'現行汽油車型高階比較基準價'},
-    'altis-hybrid': {name:'ALTIS Hybrid', engineCc:1798, fuel:'gasoline', referencePrice:895000, priceBasis:'現行 Hybrid 高階比較基準價'},
+    'altis-gasoline': {name:'ALTIS 汽油', engineCc:1798, fuel:'gasoline', powertrain:'汽油', fuelEff:15.6, referencePrice:815000, priceBasis:'現行汽油高階車型（The 60th）比較基準價'},
+    'altis-hybrid': {name:'ALTIS Hybrid', engineCc:1798, fuel:'gasoline', powertrain:'HYBRID', fuelEff:24.0, referencePrice:895000, priceBasis:'現行 Hybrid 高階車型（The 60th）比較基準價'},
     'yaris-legacy': {name:'YARIS', engineCc:1496, fuel:'gasoline', referencePrice:795000, priceBasis:'現行同級替代參考：YARiS CROSS 高階車型', substituteName:'YARiS CROSS'},
     'corolla-cross-gasoline': {name:'COROLLA CROSS 汽油', engineCc:1798, fuel:'gasoline', powertrain:'汽油', fuelEff:14.2, referencePrice:889000, priceBasis:'現行汽油高階車型比較基準價'},
     'corolla-cross-hybrid': {name:'COROLLA CROSS Hybrid 旗艦', engineCc:1798, fuel:'gasoline', powertrain:'HYBRID', fuelEff:23.5, referencePrice:989000, priceBasis:'現行 Hybrid 高階比較基準價'},
     'corolla-cross-gr-hybrid': {name:'COROLLA CROSS Hybrid GR SPORT', engineCc:1798, fuel:'gasoline', powertrain:'HYBRID', fuelEff:23.5, referencePrice:1035000, priceBasis:'現行 Hybrid GR SPORT 比較基準價'},
     'vios': {name:'VIOS', engineCc:1496, fuel:'gasoline', referencePrice:675000, priceBasis:'現行官網高階車型比較基準價'},
     'wish-legacy': {name:'WISH', engineCc:1987, fuel:'gasoline', referencePrice:2960000, priceBasis:'現行多人乘載替代參考：SIENNA 高階車型', substituteName:'SIENNA'},
-    'camry-l-legacy': {name:'CAMRY-L', engineCc:1987, fuel:'gasoline', referencePrice:1250000, priceBasis:'現行同級替代參考：CAMRY 高階車型', substituteName:'CAMRY'},
+    'camry-gasoline': {name:'CAMRY 汽油', engineCc:1987, fuel:'gasoline', powertrain:'汽油', fuelEff:16.3, referencePrice:1109000, priceBasis:'現行汽油旗艦比較基準價'},
+    'camry-hybrid': {name:'CAMRY Hybrid', engineCc:2487, fuel:'gasoline', powertrain:'HYBRID', fuelEff:25.3, referencePrice:1250000, priceBasis:'現行 Hybrid 旗艦比較基準價'},
+    'camry-l-legacy': {name:'CAMRY-L', engineCc:1987, fuel:'gasoline', referencePrice:1250000, priceBasis:'現行同級替代參考：CAMRY Hybrid 旗艦', substituteName:'CAMRY Hybrid'},
     'sienta-legacy': {name:'SIENTA', engineCc:1798, fuel:'gasoline', referencePrice:2960000, priceBasis:'現行多人乘載替代參考：SIENNA 高階車型', substituteName:'SIENNA'}
   };
   const BZ4X = {name:'bZ4X', fuel:'electric', referencePrice:1280000};
