@@ -397,9 +397,9 @@
       <div class="field">
         <label>購車價格比較</label>
         <div style="border:1px solid var(--line-dark);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,.025);">
-          <div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:9px;"><span style="color:var(--grey-text-dark)">Corolla Cross<br><small>高階車型比較基準價</small></span><b>NT$ 989,000</b></div>
-          <div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:12px;"><span style="color:var(--grey-text-dark)">bZ4X<br><small>官網建議售價</small></span><b>NT$ 1,280,000</b></div>
-          <div style="border-top:1px solid var(--line-dark);padding-top:12px;display:flex;justify-content:space-between;align-items:center;"><span>初始購車價差</span><b style="color:#ff747d;font-size:20px;">+NT$ 291,000</b></div>
+          <div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:9px;"><span style="color:var(--grey-text-dark)"><span id="currentVehicleName">RAV4</span><br><small>高階車型比較基準價</small></span><b id="currentVehiclePrice">NT$ 1,490,000</b></div>
+          <div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:12px;"><span style="color:var(--grey-text-dark)">bZ4X<br><small>官網建議售價</small></span><b id="bz4xPrice">NT$ 1,280,000</b></div>
+          <div style="border-top:1px solid var(--line-dark);padding-top:12px;display:flex;justify-content:space-between;align-items:center;"><span>初始購車價差</span><b id="purchasePriceDiff" style="color:#ff747d;font-size:20px;">bZ4X 低 NT$ 210,000</b></div>
         </div>
         <div class="hint">採該車系官網高階車型建議售價，以降低不同配備等級造成的價格比較落差；實際配備仍依各車型規格為準。</div>
       </div>
@@ -507,7 +507,10 @@
     housing: 'house',
     mood: 'anxious',
     fuelPrice: 30,
-    priceDiff: 291000,
+    currentVehicle: 'RAV4',
+    currentVehiclePrice: 1490000,
+    bz4xPrice: 1280000,
+    priceDiff: -210000,
     tco: null,
     sim: null,
     chatHistory: []
@@ -667,6 +670,12 @@
   function fmtNT(n){ return 'NT$ ' + Math.round(n).toLocaleString('zh-Hant'); }
  
   function runTCO(){
+    state.priceDiff = state.bz4xPrice - state.currentVehiclePrice;
+    document.getElementById('currentVehicleName').textContent = state.currentVehicle;
+    document.getElementById('currentVehiclePrice').textContent = fmtNT(state.currentVehiclePrice);
+    document.getElementById('bz4xPrice').textContent = fmtNT(state.bz4xPrice);
+    const priceDiffView = document.getElementById('purchasePriceDiff');
+    priceDiffView.textContent = state.priceDiff > 0 ? ('bZ4X 高 ' + fmtNT(state.priceDiff)) : state.priceDiff < 0 ? ('bZ4X 低 ' + fmtNT(Math.abs(state.priceDiff))) : '兩車同價';
     const annualKm = (state.dailyKm*5 + state.weekendKm*2) * 52;
     const annualFuelCost = (annualKm / FUEL_EFF) * state.fuelPrice;
     const fuel5 = (annualFuelCost + FUEL_MAINT) * 5;
