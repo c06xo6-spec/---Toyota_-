@@ -416,8 +416,8 @@
         <div class="tco-total" id="fuelTotal">—</div><div class="cost-bar"><span id="fuelCostBar" style="width:100%"></span></div>
         <div class="tco-line"><span>年均油錢</span><span id="fuelAnnualFuel">—</span></div>
         <div class="tco-line"><span>年均保養</span><span>NT$ 8,000</span></div>
-        <div class="tco-line"><span>使用牌照稅／年</span><span>NT$ 15,210</span></div>
-        <div class="tco-line"><span>公路養管費／年</span><span>NT$ 7,200</span></div>
+        <div class="tco-line"><span>使用牌照稅／年</span><span id="currentLicenseTax">—</span></div>
+        <div class="tco-line"><span>公路養管費／年</span><span id="currentRoadFee">—</span></div>
         <div class="tco-line"><span>5 年小計</span><span id="fuelSub">—</span></div>
       </div>
       <div class="tco-card ev">
@@ -436,7 +436,7 @@
       <span id="savingsSub">五年累積差額（含購車價差後估算）</span>
     </div>
  
-    <p class="hint" style="margin-bottom:30px;">＊試算採固定假設：油車油耗 13 km/L、bZ4X 效能 6.5 km/kWh、居家充電電價 NT$4／度。RAV4 依 2,487 c.c. 級距計入使用牌照稅 NT$15,210／年及公路養管費 NT$7,200／年；依現行政策，純電動車使用牌照稅免徵至 2030 年底，公路養管費目前免徵。未公布期間不預設續免；未計入政府補助與充電樁安裝費用，僅供提案示意，非正式報價。</p>
+    <p class="hint" id="tcoPolicyNote" style="margin-bottom:30px;">—</p>
  
     <div class="btn-row">
       <button class="btn btn-ghost" data-back="1">← 上一步</button>
@@ -511,10 +511,8 @@
     housing: 'house',
     mood: 'anxious',
     fuelPrice: 30,
-    currentVehicle: 'RAV4',
-    currentVehiclePrice: 1490000,
-    bz4xPrice: 1280000,
-    priceDiff: -210000,
+    vehicleKey: 'rav4-hybrid',
+    priceDiff: 0,
     tco: null,
     sim: null,
     chatHistory: []
@@ -528,10 +526,35 @@
   const PUBLIC_ELEC_PRICE = 9;
   const FUEL_MAINT = 8000;
   const EV_MAINT = 3000;
-  const CURRENT_LICENSE_TAX = 15210; // RAV4 2,487 c.c. 自用小客車
-  const CURRENT_ROAD_FEE = 7200; // 2401–3000 c.c. 自用小客車公路養管費
-  const EV_LICENSE_TAX = 0; // 現行純電動車免徵至 2030/12/31
-  const EV_ROAD_FEE = 0; // 現行電動汽車免徵
+  // Demo vehicle master: in production these fields can come from Toyota product/CDP data.
+  const VEHICLES = {
+    'rav4-hybrid': {name:'RAV4 Hybrid', engineCc:2487, fuel:'gasoline', referencePrice:1490000},
+    'corolla-cross-hybrid': {name:'Corolla Cross Hybrid 旗艦', engineCc:1798, fuel:'gasoline', referencePrice:989000},
+    'corolla-cross-gr-hybrid': {name:'Corolla Cross Hybrid GR SPORT', engineCc:1798, fuel:'gasoline', referencePrice:1035000}
+  };
+  const BZ4X = {name:'bZ4X', fuel:'electric', referencePrice:1280000};
+
+  function licenseTaxByCc(cc){
+    if(cc <= 500) return 1620;
+    if(cc <= 600) return 2160;
+    if(cc <= 1200) return 4320;
+    if(cc <= 1800) return 7120;
+    if(cc <= 2400) return 11230;
+    if(cc <= 3000) return 15210;
+    if(cc <= 4200) return 28220;
+    if(cc <= 5400) return 46170;
+    if(cc <= 6600) return 69690;
+    if(cc <= 7800) return 117000;
+    return 151200;
+  }
+  function roadFeeByCc(cc, fuel='gasoline'){
+    // Current private passenger-car annual schedule. Demo vehicles are gasoline/hybrid.
+    const gasoline = [[500,2160],[600,2880],[1200,4320],[1800,4800],[2400,6180],[3000,7200],[3600,8640],[4200,9810],[4800,11220],[5400,12180],[6000,13080],[6600,13950],[7200,14910],[8000,15720]];
+    const diesel = [[500,1296],[600,1728],[1200,2592],[1800,2880],[2400,3708],[3000,4320],[3600,5184],[4200,5886],[4800,6732],[5400,7308],[6000,7848],[6600,8370],[7200,8946],[8000,9432]];
+    const table = fuel === 'diesel' ? diesel : gasoline;
+    const row = table.find(([max]) => cc <= max);
+    return row ? row[1] : 0;
+  }
  
   /* ---------- stepper nav ---------- */
   const stepBtns = [...document.querySelectorAll('.step-btn')];
@@ -678,21 +701,29 @@
   function fmtNT(n){ return 'NT$ ' + Math.round(n).toLocaleString('zh-Hant'); }
  
   function runTCO(){
-    state.priceDiff = state.bz4xPrice - state.currentVehiclePrice;
-    document.getElementById('currentVehicleName').textContent = state.currentVehicle;
-    document.getElementById('currentVehiclePrice').textContent = fmtNT(state.currentVehiclePrice);
-    document.getElementById('bz4xPrice').textContent = fmtNT(state.bz4xPrice);
+    const vehicle = VEHICLES[state.vehicleKey];
+    const currentLicenseTax = licenseTaxByCc(vehicle.engineCc);
+    const currentRoadFee = roadFeeByCc(vehicle.engineCc, vehicle.fuel);
+    const evLicenseTax = 0; // current BEV exemption through 2030/12/31
+    const evRoadFee = 0; // electric vehicles currently exempt
+    state.priceDiff = BZ4X.referencePrice - vehicle.referencePrice;
+    document.getElementById('currentVehicleName').textContent = vehicle.name;
+    document.getElementById('currentVehiclePrice').textContent = fmtNT(vehicle.referencePrice);
+    document.getElementById('bz4xPrice').textContent = fmtNT(BZ4X.referencePrice);
+    document.getElementById('currentLicenseTax').textContent = fmtNT(currentLicenseTax);
+    document.getElementById('currentRoadFee').textContent = fmtNT(currentRoadFee);
+    document.getElementById('tcoPolicyNote').textContent = '＊' + vehicle.name + ' 依 ' + vehicle.engineCc.toLocaleString('zh-Hant') + ' c.c. 自動套用自用小客車級距：使用牌照稅 ' + fmtNT(currentLicenseTax) + '／年、公路養管費 ' + fmtNT(currentRoadFee) + '／年。依現行政策，純電動車使用牌照稅免徵至 2030 年底，公路養管費目前免徵；未公布期間不預設續免。另採固定假設：油車油耗 13 km/L、bZ4X 效能 6.5 km/kWh；未計入政府補助與充電樁安裝費用，僅供提案示意。';
     const priceDiffView = document.getElementById('purchasePriceDiff');
     priceDiffView.textContent = state.priceDiff > 0 ? ('bZ4X 高 ' + fmtNT(state.priceDiff)) : state.priceDiff < 0 ? ('bZ4X 低 ' + fmtNT(Math.abs(state.priceDiff))) : '兩車同價';
     const annualKm = (state.dailyKm*5 + state.weekendKm*2) * 52;
     const annualFuelCost = (annualKm / FUEL_EFF) * state.fuelPrice;
-    const fuel5 = (annualFuelCost + FUEL_MAINT + CURRENT_LICENSE_TAX + CURRENT_ROAD_FEE) * 5;
+    const fuel5 = (annualFuelCost + FUEL_MAINT + currentLicenseTax + currentRoadFee) * 5;
  
     const tier = homeChargeTier();
     const elecPrice = tier === 'home' ? HOME_ELEC_PRICE : (tier === 'mixed' ? MIXED_ELEC_PRICE : PUBLIC_ELEC_PRICE);
     const annualElecCost = (annualKm / EV_EFF) * elecPrice;
     // Demo TCO uses current EV tax/fee treatment as the displayed baseline.
-    const ev5 = state.priceDiff + (annualElecCost + EV_MAINT + EV_LICENSE_TAX + EV_ROAD_FEE) * 5;
+    const ev5 = state.priceDiff + (annualElecCost + EV_MAINT + evLicenseTax + evRoadFee) * 5;
  
     document.getElementById('fuelAnnualFuel').textContent = fmtNT(annualFuelCost);
     document.getElementById('fuelSub').textContent = fmtNT(fuel5);
