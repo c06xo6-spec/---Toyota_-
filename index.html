@@ -395,11 +395,13 @@
         </div>
       </div>
       <div class="field">
-        <label>bZ4X 與現有油車的購車價差（示意）</label>
-        <div class="slider-row">
-          <input type="range" id="priceDiff" min="0" max="400000" step="10000" value="150000">
-          <div class="slider-val" style="min-width:100px;"><span id="priceDiffVal">15</span> 萬</div>
+        <label>購車價格比較</label>
+        <div style="border:1px solid var(--line-dark);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,.025);">
+          <div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:9px;"><span style="color:var(--grey-text-dark)">Corolla Cross<br><small>高階車型比較基準價</small></span><b>NT$ 989,000</b></div>
+          <div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:12px;"><span style="color:var(--grey-text-dark)">bZ4X<br><small>官網建議售價</small></span><b>NT$ 1,280,000</b></div>
+          <div style="border-top:1px solid var(--line-dark);padding-top:12px;display:flex;justify-content:space-between;align-items:center;"><span>初始購車價差</span><b style="color:#ff747d;font-size:20px;">+NT$ 291,000</b></div>
         </div>
+        <div class="hint">採該車系官網高階車型建議售價，以降低不同配備等級造成的價格比較落差；實際配備仍依各車型規格為準。</div>
       </div>
     </div>
  
@@ -656,15 +658,9 @@
  
   /* ---------- step 2: TCO ---------- */
   const fuelPriceEl = document.getElementById('fuelPrice');
-  const priceDiffEl = document.getElementById('priceDiff');
   fuelPriceEl.addEventListener('input', () => {
     state.fuelPrice = +fuelPriceEl.value;
     document.getElementById('fuelPriceVal').textContent = state.fuelPrice;
-    runTCO();
-  });
-  priceDiffEl.addEventListener('input', () => {
-    state.priceDiff = +priceDiffEl.value;
-    document.getElementById('priceDiffVal').textContent = Math.round(state.priceDiff/10000);
     runTCO();
   });
  
