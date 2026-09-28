@@ -499,6 +499,14 @@
       <b id="savingsBig">—</b>
       <span id="savingsSub">五年累積差額（含購車價差後估算）</span>
     </div>
+
+    <div class="tco-savings" style="margin-top:12px;background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.02));border-color:var(--line-dark);">
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <span style="font-size:11px;letter-spacing:.09em;color:var(--grey-text-dark);">5-YEAR RUNNING COST SAVINGS</span>
+        <b id="runningSavingsBig">—</b>
+        <span id="runningSavingsSub">不含購車價格，只比較五年能源、保養與稅費</span>
+      </div>
+    </div>
  
     <p class="hint" id="tcoPolicyNote" style="margin-bottom:30px;">—</p>
  
@@ -824,6 +832,19 @@
     document.getElementById('evCostBar').style.width = Math.max(18, ev5/maxCost*100) + '%';
  
     const diff = fuel5 - ev5;
+    const fuelRunning5 = fuel5;
+    const evRunning5 = ev5 - state.priceDiff;
+    const runningDiff = fuelRunning5 - evRunning5;
+    const runningSavingsBig = document.getElementById('runningSavingsBig');
+    const runningSavingsSub = document.getElementById('runningSavingsSub');
+    if(runningDiff >= 0){
+      runningSavingsBig.textContent = fmtNT(runningDiff) + ' 使用成本節省';
+      runningSavingsSub.textContent = '扣除購車價格後，五年能源、保養、牌照稅與公路養管費合計差額';
+    } else {
+      runningSavingsBig.textContent = fmtNT(-runningDiff) + ' 使用成本較高';
+      runningSavingsSub.textContent = '扣除購車價格後，五年能源、保養與稅費合計仍較高';
+    }
+
     const savingsBig = document.getElementById('savingsBig');
     const savingsSub = document.getElementById('savingsSub');
     if(diff >= 0){
@@ -834,7 +855,7 @@
       savingsSub.textContent = '依目前官網售價價差計算，五年持有成本仍較高；隨里程增加，能源與保養成本差距會逐漸拉近';
     }
  
-    state.tco = {annualKm, annualFuelCost, fuel5, annualElecCost, ev5, diff};
+    state.tco = {annualKm, annualFuelCost, fuel5, annualElecCost, ev5, diff, fuelRunning5, evRunning5, runningDiff};
   }
  
   document.getElementById('toStep3').addEventListener('click', () => {
