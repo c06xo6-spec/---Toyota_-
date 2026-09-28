@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>油轉電評估精靈 — POC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0c0c0e;
+    --ink-soft:#151517;
+    --paper:#faf9f8;
+    --paper-card:#f0efed;
+    --red:#e30613;
+    --red-deep:#a80410;
+    --teal:#00a8ac;
+    --line:#e2e0dd;
+    --line-dark:#2a2a2d;
+    --ink-text:#1b1b1d;
+    --grey-text:#5c5b58;
+    --grey-text-dark:#a9a8a6;
+    --white:#ffffff;
+    --good:#1fae63;
+    --warn:#e3a000;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Noto Sans TC',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--ink);
+    color:#fff;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  img,svg{max-width:100%;display:block;}
+ 
+  /* ---- top bar ---- */
+  header{
+    position:sticky;top:0;z-index:40;
+    background:rgba(12,12,14,.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .top-inner{max-width:920px;margin:0 auto;padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;}
+  .brand{font-weight:700;font-size:14.5px;color:#fff;}
+  .brand span{color:var(--red);}
+  .poc-badge{font-size:11px;font-weight:700;letter-spacing:.04em;color:#ff8b91;border:1px solid rgba(227,6,19,.4);padding:4px 10px;border-radius:999px;}
+ 
+  /* ---- stepper ---- */
+  .stepper{display:flex;gap:6px;padding:18px 0 0;}
+  .step-btn{
+    flex:1;background:none;border:none;color:var(--grey-text-dark);
+    font-family:inherit;font-size:12.5px;font-weight:700;text-align:left;
+    padding:0 0 14px;cursor:pointer;border-bottom:3px solid var(--line-dark);
+    transition:color .15s, border-color .15s;
+  }
+  .step-btn .sn{display:block;font-size:10.5px;opacity:.7;margin-bottom:4px;}
+  .step-btn.active{color:#fff;border-color:var(--red);}
+  .step-btn.done{color:#fff;}
+  .step-btn:disabled{cursor:not-allowed;opacity:.45;}
+ 
+  main{padding:34px 0 90px;}
+  .hero{position:relative;overflow:hidden;border:1px solid var(--line-dark);border-radius:24px;margin-bottom:42px;padding:44px;background:
+    radial-gradient(circle at 82% 28%,rgba(227,6,19,.24),transparent 30%),
+    linear-gradient(135deg,#171719 0%,#0c0c0e 68%);}
+  .hero:after{content:'';position:absolute;width:310px;height:310px;border:1px solid rgba(255,255,255,.07);border-radius:50%;right:-90px;top:-115px;}
+  .hero-kicker{font-size:11px;font-weight:800;letter-spacing:.16em;color:#ff747d;text-transform:uppercase;margin-bottom:14px;}
+  .hero h1{font-size:clamp(34px,6vw,58px);line-height:1.05;letter-spacing:-.04em;margin:0 0 18px;max-width:680px;font-weight:900;}
+  .hero h1 em{font-style:normal;color:var(--red);}
+  .hero-copy{font-size:15px;line-height:1.8;color:#b7b5b2;max-width:590px;margin:0 0 28px;}
+  .hero-proof{display:flex;gap:10px;flex-wrap:wrap;}
+  .proof-pill{font-size:12px;color:#e8e7e5;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);padding:8px 12px;border-radius:999px;}
+  .known-profile{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin:0 0 34px;}
+  .profile-card{background:linear-gradient(145deg,#19191c,#111113);border:1px solid var(--line-dark);border-radius:18px;padding:24px;}
+  .profile-card.highlight{border-color:rgba(227,6,19,.45);background:linear-gradient(145deg,rgba(227,6,19,.11),#111113 55%);}
+  .profile-label{font-size:10.5px;font-weight:800;letter-spacing:.12em;color:#ff747d;margin-bottom:10px;}
+  .profile-title{font-size:21px;font-weight:900;margin-bottom:7px;}
+  .profile-desc{font-size:12.5px;line-height:1.7;color:var(--grey-text-dark);margin:0 0 16px;}
+  .data-chips{display:flex;gap:8px;flex-wrap:wrap}.data-chip{font-size:11.5px;padding:7px 10px;border-radius:8px;background:rgba(255,255,255,.055);color:#ddd;border:1px solid rgba(255,255,255,.07)}
+  .privacy-note{display:flex;gap:10px;align-items:flex-start;margin:0 0 38px;padding:14px 16px;border-left:3px solid var(--red);background:rgba(255,255,255,.025);color:var(--grey-text-dark);font-size:12px;line-height:1.7}
+  .question-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}.question-head .num{font-size:10px;font-weight:900;color:var(--red);border:1px solid rgba(227,6,19,.5);border-radius:999px;padding:3px 7px}
+  @media(max-width:640px){.known-profile{grid-template-columns:1fr}}
+  .section-eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--red);margin-bottom:10px;}
+  .fit-card{display:grid;grid-template-columns:150px 1fr;gap:28px;align-items:center;background:linear-gradient(135deg,#171719,#111113);border:1px solid var(--line-dark);border-radius:18px;padding:26px;margin-bottom:30px;}
+  .fit-score{width:130px;height:130px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:10px solid rgba(227,6,19,.2);box-shadow:inset 0 0 0 3px var(--red);}
+  .fit-score b{font-size:38px;line-height:1;font-weight:900}.fit-score span{font-size:11px;color:var(--grey-text-dark);margin-top:5px}
+  .fit-copy h3{margin:0 0 8px;font-size:20px}.fit-copy p{margin:0;color:var(--grey-text-dark);font-size:13.5px;line-height:1.75}
+  @media(max-width:560px){.hero{padding:30px 24px}.fit-card{grid-template-columns:1fr}.fit-score{margin:auto}}
+  .panel{display:none;}
+  .panel.active{display:block;animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+ 
+  h2{font-size:clamp(24px,3.4vw,32px);font-weight:900;margin:0 0 8px;}
+  .sub{color:var(--grey-text-dark);font-size:15px;line-height:1.7;margin:0 0 36px;max-width:560px;}
+ 
+  .field{margin-bottom:30px;}
+  .field label{display:block;font-size:13.5px;font-weight:700;color:#e7e6e4;margin-bottom:12px;}
+  .field .hint{font-size:12.5px;color:var(--grey-text-dark);margin-top:8px;}
+  .slider-row{display:flex;align-items:center;gap:16px;}
+  input[type=range]{
+    flex:1;height:4px;border-radius:999px;background:var(--line-dark);
+    appearance:none;-webkit-appearance:none;outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+    background:var(--red);border:3px solid #fff;cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--red);border:3px solid #fff;cursor:pointer;}
+  .slider-val{flex:none;min-width:74px;text-align:right;font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;}
+ 
+  .option-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:560px){.option-grid{grid-template-columns:1fr;}}
+  .opt{
+    background:var(--ink-soft);border:1px solid var(--line-dark);border-radius:12px;
+    padding:16px 18px;cursor:pointer;font-size:13.5px;color:var(--grey-text-dark);
+    transition:border-color .15s, background .15s, color .15s;
+  }
+  .opt b{display:block;color:#fff;font-size:14.5px;margin-bottom:4px;font-weight:700;}
+  .opt.sel{border-color:var(--red);background:rgba(227,6,19,.12);color:#f1cdd0;}
+  .opt.sel b{color:#fff;}
+ 
+  .check-row{display:flex;align-items:center;gap:12px;background:var(--ink-soft);border:1px solid var(--line-dark);border-radius:12px;padding:16px 18px;}
+  .toggle{flex:none;width:44px;height:26px;border-radius:999px;background:var(--line-dark);position:relative;cursor:pointer;transition:background .15s;}
+  .toggle.on{background:var(--red);}
+  .toggle .dot{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s;}
+  .toggle.on .dot{left:21px;}
+  .check-row .ctext{font-size:13.5px;color:#e7e6e4;}
+ 
+  .btn-row{display:flex;gap:12px;margin-top:44px;}
+  .btn{
+    font-family:inherit;font-weight:700;font-size:14.5px;border-radius:10px;
+    padding:14px 26px;border:none;cursor:pointer;transition:opacity .15s, transform .1s;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn-primary{background:var(--red);color:#fff;}
+  .btn-primary:hover{opacity:.9;}
+  .btn-ghost{background:none;color:var(--grey-text-dark);border:1px solid var(--line-dark);}
+  .btn-ghost:hover{color:#fff;border-color:var(--grey-text-dark);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+ 
+  /* ---- simulation ---- */
+  .sim-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-dark);border:1px solid var(--line-dark);border-radius:14px;overflow:hidden;margin-bottom:36px;}
+  @media (max-width:560px){.sim-summary{grid-template-columns:1fr;}}
+  .sim-stat{background:var(--ink-soft);padding:22px 20px;}
+  .sim-stat b{display:block;font-size:26px;font-weight:900;color:var(--red);}
+  .sim-stat span{font-size:12.5px;color:var(--grey-text-dark);}
+  .week-chart{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:end;height:220px;padding:0 4px;border-bottom:1px solid var(--line-dark);margin-bottom:14px;}
+  .day-col{display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;}
+  .day-bar-track{width:100%;max-width:36px;height:170px;background:var(--ink-soft);border:1px solid var(--line-dark);border-radius:6px;position:relative;display:flex;align-items:flex-end;overflow:hidden;}
+  .day-bar-fill{width:100%;background:var(--teal);transition:height .4s;}
+  .day-bar-fill.low{background:var(--warn);}
+  .day-bar-fill.critical{background:var(--red);}
+  .day-pct{font-size:11px;font-weight:700;margin-top:8px;}
+  .day-name{font-size:11.5px;color:var(--grey-text-dark);margin-top:4px;}
+  .threshold-line{position:absolute;left:0;right:0;border-top:1px dashed rgba(255,255,255,.35);}
+  .sim-note{background:var(--ink-soft);border:1px solid var(--line-dark);border-radius:12px;padding:18px 20px;font-size:13.5px;color:var(--grey-text-dark);line-height:1.8;}
+  .sim-note b{color:#fff;}
+  .sim-insight{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin:0 0 28px;}
+  .insight-card{background:linear-gradient(145deg,#171719,#101012);border:1px solid var(--line-dark);border-radius:16px;padding:22px;}
+  .insight-card .mini-label{font-size:11px;color:var(--grey-text-dark);letter-spacing:.08em;font-weight:800;margin-bottom:8px;}
+  .insight-card strong{display:block;font-size:22px;line-height:1.35;margin-bottom:6px;}
+  .insight-card p{font-size:12.5px;color:var(--grey-text-dark);line-height:1.7;margin:0;}
+  .battery-legend{display:flex;gap:14px;flex-wrap:wrap;margin:-6px 0 22px;font-size:11.5px;color:var(--grey-text-dark);}
+  .battery-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--teal);}
+  .battery-legend .warn-dot{background:var(--warn)}.battery-legend .risk-dot{background:var(--red)}
+  @media(max-width:640px){.sim-insight{grid-template-columns:1fr}}
+ 
+  /* ---- TCO ---- */
+  .tco-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;}
+  @media (max-width:640px){.tco-grid{grid-template-columns:1fr;}}
+  .tco-card{background:var(--ink-soft);border:1px solid var(--line-dark);border-radius:14px;padding:24px;}
+  .tco-card h4{margin:0 0 4px;font-size:15px;}
+  .tco-card .tco-total{font-size:30px;font-weight:900;margin:14px 0 16px;}
+  .tco-card.fuel .tco-total{color:var(--grey-text-dark);}
+  .tco-card.ev .tco-total{color:var(--red);}
+  .tco-line{display:flex;justify-content:space-between;font-size:12.5px;color:var(--grey-text-dark);padding:7px 0;border-top:1px solid var(--line-dark);}
+  .tco-line:first-of-type{border-top:none;}
+  .tco-savings{background:var(--red);border-radius:14px;padding:22px 24px;text-align:center;margin-bottom:30px;}
+  .tco-savings b{display:block;font-size:32px;font-weight:900;}
+  .tco-savings span{font-size:13px;color:#ffe3e4;}
+  .tco-headline{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:24px;padding:20px 22px;border:1px solid var(--line-dark);border-radius:14px;background:#111113;}
+  .tco-headline .mini-label{font-size:11px;color:var(--grey-text-dark);letter-spacing:.08em;font-weight:800;margin-bottom:5px;}
+  .tco-headline strong{font-size:24px;line-height:1.3;}
+  .tco-headline .annual-km{text-align:right;color:var(--grey-text-dark);font-size:12px}.tco-headline .annual-km b{display:block;color:#fff;font-size:20px;}
+  .tco-card{position:relative;overflow:hidden}.tco-card.ev:before{content:'EV';position:absolute;right:-8px;top:-22px;font-size:80px;font-weight:900;color:rgba(227,6,19,.06)}
+  .tco-card .card-tag{font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--grey-text-dark);margin-bottom:12px;}
+  .cost-bar{height:7px;background:#262629;border-radius:999px;overflow:hidden;margin:4px 0 18px}.cost-bar span{display:block;height:100%;border-radius:999px;background:#777}.ev .cost-bar span{background:var(--red)}
+  .tco-savings{position:relative;overflow:hidden}.tco-savings:after{content:'5Y';position:absolute;right:16px;top:-30px;font-size:110px;font-weight:900;color:rgba(255,255,255,.08)}
+  .tco-savings b,.tco-savings span{position:relative;z-index:1}
+  @media(max-width:560px){.tco-headline{align-items:flex-start;flex-direction:column}.tco-headline .annual-km{text-align:left}}
+  .assump-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  @media (max-width:640px){.assump-grid{grid-template-columns:1fr;}}
+ 
+  /* ---- chat ---- */
+  .chat-shell{background:var(--ink-soft);border:1px solid var(--line-dark);border-radius:16px;display:flex;flex-direction:column;height:460px;overflow:hidden;}
+  .chat-log{flex:1;overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:12px;}
+  .msg{max-width:80%;padding:12px 15px;border-radius:14px;font-size:14px;line-height:1.65;}
+  .msg.user{align-self:flex-end;background:#2a2a2d;color:#f1f0ee;border-bottom-right-radius:4px;}
+  .msg.ai{align-self:flex-start;background:var(--red);color:#fff;border-bottom-left-radius:4px;white-space:pre-wrap;}
+  .msg.sys{align-self:center;color:var(--grey-text-dark);font-size:12.5px;text-align:center;max-width:90%;}
+  .chat-input-row{display:flex;gap:10px;padding:14px;border-top:1px solid var(--line-dark);}
+  .chat-input-row input{
+    flex:1;background:var(--ink);border:1px solid var(--line-dark);border-radius:10px;
+    color:#fff;font-family:inherit;font-size:14px;padding:12px 14px;outline:none;
+  }
+  .chat-input-row input:focus{border-color:var(--red);}
+  .chat-input-row button{flex:none;}
+  .suggest-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+  .suggest-chip{
+    font-size:12.5px;background:var(--ink-soft);border:1px solid var(--line-dark);color:var(--grey-text-dark);
+    padding:8px 14px;border-radius:999px;cursor:pointer;transition:border-color .15s,color .15s;
+  }
+  .suggest-chip:hover{border-color:var(--red);color:#fff;}
+  .typing{display:inline-flex;gap:4px;padding:4px 0;}
+  .typing span{width:6px;height:6px;border-radius:50%;background:#ffd7d9;animation:blink 1.1s infinite ease-in-out;}
+  .typing span:nth-child(2){animation-delay:.15s;}
+  .typing span:nth-child(3){animation-delay:.3s;}
+  @keyframes blink{0%,80%,100%{opacity:.25;}40%{opacity:1;}}
+ 
+  /* ---- booking ---- */
+  .book-card{background:var(--ink-soft);border:1px solid var(--line-dark);border-radius:16px;padding:32px;max-width:460px;}
+  .book-card .field{margin-bottom:18px;}
+  .book-card input[type=text],.book-card select{
+    width:100%;background:var(--ink);border:1px solid var(--line-dark);border-radius:10px;
+    color:#fff;font-family:inherit;font-size:14px;padding:12px 14px;outline:none;
+  }
+  .book-card input:focus,.book-card select:focus{border-color:var(--red);}
+  .book-done{text-align:center;padding:60px 20px;}
+  .book-done .check{width:64px;height:64px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:28px;}
+  .book-done h3{font-size:22px;margin:0 0 10px;}
+  .book-done p{color:var(--grey-text-dark);font-size:14px;max-width:400px;margin:0 auto;}
+ 
+  footer{border-top:1px solid var(--line-dark);padding:24px 0;text-align:center;}
+  footer p{margin:0;font-size:12.5px;color:var(--grey-text-dark);}
+</style>
+</head>
+<body>
+ 
+<header>
+  <div class="top-inner">
+    <div class="brand">油轉電評估精靈 <span>POC</span></div>
+    <div class="poc-badge">互動原型 · 僅供提案展示</div>
+  </div>
+  <div class="wrap">
+    <div class="stepper" id="stepper">
+      <button class="step-btn active" data-step="0"><span class="sn">01</span>用車診斷</button>
+      <button class="step-btn" data-step="1" disabled><span class="sn">02</span>情境模擬</button>
+      <button class="step-btn" data-step="2" disabled><span class="sn">03</span>成本試算</button>
+      <button class="step-btn" data-step="3" disabled><span class="sn">04</span>顧問對話</button>
+      <button class="step-btn" data-step="4" disabled><span class="sn">05</span>預約試乘</button>
+    </div>
+  </div>
+</header>
+ 
+<main class="wrap">
+ 
+  <!-- STEP 0: 診斷 -->
+  <section class="panel active" data-panel="0">
+    <div class="hero">
+      <div class="hero-kicker">TOYOTA EV TRANSITION ADVISOR</div>
+      <h1>Toyota 已經認識你的車。<br>接下來，想更了解<em>你的生活。</em></h1>
+      <p class="hero-copy">我們先從既有車主資料建立起點，再由你親自確認生活條件。不是替你決定要不要換 EV，而是一起看清楚：換成 bZ4X 後，日常會發生什麼改變。</p>
+      <div class="hero-proof">
+        <span class="proof-pill">Toyota 車主資料作為起點</span>
+        <span class="proof-pill">生活條件由你確認</span>
+        <span class="proof-pill">約 3 分鐘完成</span>
+      </div>
+    </div>
+    <div class="section-eyebrow">01 · UNDERSTAND</div>
+    <h2>先從 Toyota 已知的你開始</h2>
+    <p class="sub">以下為 PoC 示意的車主起始輪廓。正式服務可由會員／CDP 帶入既有資料，再由車主確認與補充 Toyota 不知道的生活條件。</p>
+
+    <div class="known-profile">
+      <div class="profile-card highlight">
+        <div class="profile-label">TOYOTA 已知 · DEMO PROFILE</div>
+        <div class="profile-title">RAV4 Hybrid 車主</div>
+        <p class="profile-desc">既有車主關係資料可作為油轉電對話的個人化起點，不需要每次都從零開始。</p>
+        <div class="data-chips"><span class="data-chip">現有車款 RAV4 Hybrid</span><span class="data-chip">既有 Toyota 車主</span><span class="data-chip">會員識別已完成</span></div>
+      </div>
+      <div class="profile-card">
+        <div class="profile-label">需要你告訴我們</div>
+        <div class="profile-title">生活條件才是關鍵</div>
+        <p class="profile-desc">每天開多遠？是否常跑長途？家裡能不能充電？這些不由資料替你猜，而是由你自己確認。</p>
+        <div class="data-chips"><span class="data-chip">日常里程</span><span class="data-chip">長途頻率</span><span class="data-chip">停車／充電</span><span class="data-chip">主要疑慮</span></div>
+      </div>
+    </div>
+    <div class="privacy-note"><span>ⓘ</span><span><b style="color:#fff">你掌控最後答案。</b> CDP 只作為個人化起點；關鍵生活條件仍由你確認或修改，避免讓系統替你做決定。</span></div>
+
+    <div class="section-eyebrow">CONFIRM YOUR LIFE</div>
+    <h2>補充 Toyota 還不知道的事</h2>
+    <p class="sub">不用先懂電動車。回答幾個日常問題，我們會把你的真實使用方式轉成一週 EV 生活情境。</p>
+ 
+    <div class="field">
+      <div class="question-head"><span class="num">01</span><label style="margin:0">平常上下班／通勤，一天大約開多少公里？</label></div>
+      <div class="slider-row">
+        <input type="range" id="dailyKm" min="5" max="100" value="30">
+        <div class="slider-val"><span id="dailyKmVal">30</span> km</div>
+      </div>
+      <div class="hint">單趟通勤 + 日常採買代步的合計里程</div>
+    </div>
+ 
+    <div class="field">
+      <div class="question-head"><span class="num">02</span><label style="margin:0">假日會不會有長途出遊？大約多遠？</label></div>
+      <div class="slider-row">
+        <input type="range" id="weekendKm" min="0" max="400" step="10" value="80">
+        <div class="slider-val"><span id="weekendKmVal">80</span> km</div>
+      </div>
+      <div class="hint">拖到 0 表示假日通常不太開車</div>
+    </div>
+ 
+    <div class="field">
+      <div class="question-head"><span class="num">03</span><label style="margin:0">居住與停車條件</label></div>
+      <div class="option-grid" id="housingOpts">
+        <div class="opt sel" data-val="house">
+          <b>透天／有固定車位</b>可自行安裝充電樁，晚上在家充電最方便
+        </div>
+        <div class="opt" data-val="apt-fixed">
+          <b>公寓大樓，有固定車位</b>需與管委會協調安裝充電樁
+        </div>
+        <div class="opt" data-val="apt-shared">
+          <b>公寓大樓，無固定車位</b>難以安裝私人充電樁
+        </div>
+        <div class="opt" data-val="none">
+          <b>租屋／無車位</b>主要仰賴公共充電站
+        </div>
+      </div>
+    </div>
+ 
+    <div class="field">
+      <div class="question-head"><span class="num">04</span><label style="margin:0">目前最想先解決哪種疑慮？</label></div>
+      <div class="option-grid" id="moodOpts">
+        <div class="opt sel" data-val="anxious">
+          <b>充電／續航比較讓我擔心</b>想先知道日常使用會不會需要改變
+        </div>
+        <div class="opt" data-val="analytical">
+          <b>成本比較是我的重點</b>想先知道換成 EV 後五年到底差多少
+        </div>
+      </div>
+    </div>
+ 
+    <div class="btn-row">
+      <button class="btn btn-primary" id="toStep1">模擬我的一週 EV 生活 →</button>
+    </div>
+  </section>
+ 
+  <!-- STEP 1: 模擬 -->
+  <section class="panel" data-panel="1">
+    <h2>一週用車情境模擬</h2>
+    <p class="sub" id="simSub">以你的日常里程換算成 bZ4X 電量消耗，看看一週下來電量餘裕夠不夠。</p>
+ 
+    <div class="fit-card">
+      <div class="fit-score"><b id="fitScore">—</b><span>油轉電適配度</span></div>
+      <div class="fit-copy"><div class="section-eyebrow">PERSONAL FIT</div><h3 id="fitTitle">正在分析你的用車輪廓</h3><p id="fitDesc">系統會綜合日常里程、長途需求與充電條件，提供情境化判斷。</p></div>
+    </div>
+
+    <div class="sim-insight">
+      <div class="insight-card"><div class="mini-label">THIS WEEK</div><strong id="rangeHeadline">你的日常里程在續航舒適圈內</strong><p id="rangeDetail">依目前條件分析本週用車與充電節奏。</p></div>
+      <div class="insight-card"><div class="mini-label">CHARGING ROUTINE</div><strong id="chargeHeadline">回家即充</strong><p id="chargeDetail">充電方式會依你的停車條件調整。</p></div>
+    </div>
+
+    <div class="sim-summary">
+      <div class="sim-stat"><b id="simRange">460</b><span>bZ4X 官方測試續航 (km)</span></div>
+      <div class="sim-stat"><b id="simWeekKm">—</b><span>本週預估總里程 (km)</span></div>
+      <div class="sim-stat"><b id="simMinBattery">—</b><span>週間最低剩餘電量</span></div>
+    </div>
+ 
+    <div class="battery-legend"><span><i></i>充足 40%+</span><span><i class="warn-dot"></i>留意 20–39%</span><span><i class="risk-dot"></i>建議充電 &lt;20%</span></div>
+    <div class="week-chart" id="weekChart"></div>
+    <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--grey-text-dark);margin-bottom:30px;">
+      <span>虛線為 20% 建議充電警示線</span>
+      <span>— 僅為模擬示意，實際續航依駕駛習慣、氣候與路況而異</span>
+    </div>
+ 
+    <div class="sim-note" id="simNote"></div>
+ 
+    <div class="btn-row">
+      <button class="btn btn-ghost" data-back="0">← 上一步</button>
+      <button class="btn btn-primary" id="toStep2">看五年持有成本 →</button>
+    </div>
+  </section>
+ 
+  <!-- STEP 2: 試算 -->
+  <section class="panel" data-panel="2">
+    <h2>五年持有成本試算</h2>
+    <p class="sub">油車 vs bZ4X，把油錢／電費、保養、購車差額都算進去，看五年下來差多少。</p>
+ 
+    <div class="assump-grid">
+      <div class="field">
+        <label>目前油價（NT$／公升）</label>
+        <div class="slider-row">
+          <input type="range" id="fuelPrice" min="25" max="36" value="30">
+          <div class="slider-val"><span id="fuelPriceVal">30</span> 元</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>bZ4X 與現有油車的購車價差（示意）</label>
+        <div class="slider-row">
+          <input type="range" id="priceDiff" min="0" max="400000" step="10000" value="150000">
+          <div class="slider-val" style="min-width:100px;"><span id="priceDiffVal">15</span> 萬</div>
+        </div>
+      </div>
+    </div>
+ 
+    <div class="tco-headline">
+      <div><div class="mini-label">YOUR 5-YEAR COST VIEW</div><strong>把「車價」改看成「五年總持有成本」</strong></div>
+      <div class="annual-km">依你的用車習慣推估<b id="annualKmView">— km／年</b></div>
+    </div>
+
+    <div class="tco-grid">
+      <div class="tco-card fuel">
+        <div class="card-tag">CURRENT · ICE</div><h4>現有燃油車</h4>
+        <div class="tco-total" id="fuelTotal">—</div><div class="cost-bar"><span id="fuelCostBar" style="width:100%"></span></div>
+        <div class="tco-line"><span>年均油錢</span><span id="fuelAnnualFuel">—</span></div>
+        <div class="tco-line"><span>年均保養</span><span>NT$ 8,000</span></div>
+        <div class="tco-line"><span>5 年小計</span><span id="fuelSub">—</span></div>
+      </div>
+      <div class="tco-card ev">
+        <div class="card-tag">SWITCH · BEV</div><h4>換購 bZ4X</h4>
+        <div class="tco-total" id="evTotal">—</div><div class="cost-bar"><span id="evCostBar" style="width:80%"></span></div>
+        <div class="tco-line"><span>購車價差</span><span id="evDiffLine">—</span></div>
+        <div class="tco-line"><span>年均電費</span><span id="evAnnualFuel">—</span></div>
+        <div class="tco-line"><span>年均保養</span><span>NT$ 3,000</span></div>
+      </div>
+    </div>
+ 
+    <div class="tco-savings">
+      <b id="savingsBig">—</b>
+      <span id="savingsSub">五年累積差額（含購車價差後估算）</span>
+    </div>
+ 
+    <p class="hint" style="margin-bottom:30px;">＊試算採固定假設：油車油耗 13 km/L、bZ4X 效能 6.5 km/kWh、居家充電電價 NT$4／度；未計入政府補助與充電樁安裝費用，僅供提案示意，非正式報價。</p>
+ 
+    <div class="btn-row">
+      <button class="btn btn-ghost" data-back="1">← 上一步</button>
+      <button class="btn btn-primary" id="toStep3">和 AI 顧問聊聊 →</button>
+    </div>
+  </section>
+ 
+  <!-- STEP 3: 顧問對話 -->
+  <section class="panel" data-panel="3">
+    <h2>問問油轉電顧問</h2>
+    <p class="sub">顧問已讀取你剛才的用車診斷與成本試算。直接問續航、充電、成本或保養，回答會引用你的個人化結果。</p>
+ 
+    <div class="chat-shell">
+      <div class="chat-log" id="chatLog"></div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="輸入你的問題⋯">
+        <button class="btn btn-primary" id="chatSend">送出</button>
+      </div>
+    </div>
+    <div class="suggest-row" id="suggestRow"></div>
+ 
+    <div class="btn-row">
+      <button class="btn btn-ghost" data-back="2">← 上一步</button>
+      <button class="btn btn-primary" id="toStep4">預約試乘 →</button>
+    </div>
+  </section>
+ 
+  <!-- STEP 4: 預約 -->
+  <section class="panel" data-panel="4">
+    <div id="bookForm">
+      <h2>預約 bZ4X 試乘</h2>
+      <p class="sub">留下聯絡方式，業務顧問會依你剛剛的診斷結果，準備好對應的試乘車型與資料。</p>
+      <div class="book-card">
+        <div class="field">
+          <label>姓名</label>
+          <input type="text" id="bkName" placeholder="怎麼稱呼你？">
+        </div>
+        <div class="field">
+          <label>手機號碼</label>
+          <input type="text" id="bkPhone" placeholder="09xx-xxx-xxx">
+        </div>
+        <div class="field">
+          <label>希望的展間</label>
+          <select id="bkStore">
+            <option>台北信義展示中心</option>
+            <option>台中西屯展示中心</option>
+            <option>高雄左營展示中心</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="bkSubmit" style="width:100%;">確認預約</button>
+      </div>
+    </div>
+    <div class="book-done" id="bookDone" style="display:none;">
+      <div class="check">✓</div>
+      <h3>預約已送出</h3>
+      <p>業務顧問將於 1 個工作天內與你聯繫，並同步你的用車診斷結果，讓試乘更貼近你的實際需求。</p>
+    </div>
+  </section>
+ 
+</main>
+ 
+<footer>
+  <p>油轉電 AI 顧問服務提案 · 互動原型（POC）僅用於提案展示，數據為模擬試算</p>
+</footer>
+ 
+<script>
+(function(){
+  const state = {
+    step: 0,
+    dailyKm: 30,
+    weekendKm: 80,
+    housing: 'house',
+    mood: 'anxious',
+    fuelPrice: 30,
+    priceDiff: 150000,
+    tco: null,
+    sim: null,
+    chatHistory: []
+  };
+ 
+  const RANGE = 460; // bZ4X 模擬續航 km
+  const FUEL_EFF = 13; // km/L
+  const EV_EFF = 6.5; // km/kWh
+  const HOME_ELEC_PRICE = 4;
+  const MIXED_ELEC_PRICE = 6;
+  const PUBLIC_ELEC_PRICE = 9;
+  const FUEL_MAINT = 8000;
+  const EV_MAINT = 3000;
+ 
+  /* ---------- stepper nav ---------- */
+  const stepBtns = [...document.querySelectorAll('.step-btn')];
+  const panels = [...document.querySelectorAll('.panel')];
+  function goTo(n){
+    state.step = n;
+    panels.forEach(p => p.classList.toggle('active', +p.dataset.panel === n));
+    stepBtns.forEach((b,i) => {
+      b.classList.toggle('active', i===n);
+      b.classList.toggle('done', i<n);
+      if(i<=n) b.disabled = false;
+    });
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  stepBtns.forEach(b => b.addEventListener('click', () => { if(!b.disabled) goTo(+b.dataset.step); }));
+  document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => goTo(+b.dataset.back)));
+ 
+  /* ---------- step 0 inputs ---------- */
+  const dailyKmEl = document.getElementById('dailyKm');
+  const weekendKmEl = document.getElementById('weekendKm');
+  dailyKmEl.addEventListener('input', () => {
+    state.dailyKm = +dailyKmEl.value;
+    document.getElementById('dailyKmVal').textContent = state.dailyKm;
+  });
+  weekendKmEl.addEventListener('input', () => {
+    state.weekendKm = +weekendKmEl.value;
+    document.getElementById('weekendKmVal').textContent = state.weekendKm;
+  });
+  function wireOptions(containerId, key){
+    const c = document.getElementById(containerId);
+    c.querySelectorAll('.opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        c.querySelectorAll('.opt').forEach(o => o.classList.remove('sel'));
+        opt.classList.add('sel');
+        state[key] = opt.dataset.val;
+      });
+    });
+  }
+  wireOptions('housingOpts','housing');
+  wireOptions('moodOpts','mood');
+ 
+  document.getElementById('toStep1').addEventListener('click', () => {
+    runSimulation();
+    goTo(1);
+  });
+ 
+  /* ---------- step 1: simulation ---------- */
+  function homeChargeTier(){
+    if(state.housing === 'house') return 'home';
+    if(state.housing === 'apt-fixed') return 'mixed';
+    return 'public';
+  }
+  function runSimulation(){
+    const days = ['一','二','三','四','五','六','日'];
+    const chart = document.getElementById('weekChart');
+    chart.innerHTML = '';
+    const tier = homeChargeTier();
+    const nightlyCharge = tier !== 'public'; // 有固定車位者假設每晚可充回滿電
+    let battery = 100;
+    let minBattery = 100;
+    let totalKm = 0;
+    const rows = [];
+ 
+    days.forEach((d, i) => {
+      const isWeekend = i >= 5;
+      const km = isWeekend ? state.weekendKm : state.dailyKm;
+      totalKm += km;
+      const used = (km / RANGE) * 100;
+      if (nightlyCharge) battery = 100; // 每天早上滿電出發
+      const after = Math.max(0, battery - used);
+      minBattery = Math.min(minBattery, after);
+      rows.push({day:d, after, isWeekend, needCharge: after < 20});
+      battery = after;
+    });
+ 
+    document.getElementById('simRange').textContent = RANGE;
+    document.getElementById('simWeekKm').textContent = Math.round(totalKm);
+    document.getElementById('simMinBattery').textContent = Math.round(minBattery) + '%';
+ 
+    rows.forEach(r => {
+      const col = document.createElement('div');
+      col.className = 'day-col';
+      const cls = r.after < 20 ? 'critical' : (r.after < 40 ? 'low' : '');
+      col.innerHTML = `
+        <div class="day-bar-track">
+          <div class="threshold-line" style="bottom:20%;"></div>
+          <div class="day-bar-fill ${cls}" style="height:${Math.max(4,r.after)}%;"></div>
+        </div>
+        <div class="day-pct">${Math.round(r.after)}%</div>
+        <div class="day-name">週${r.day}</div>
+      `;
+      chart.appendChild(col);
+    });
+ 
+    const note = document.getElementById('simNote');
+    if(tier === 'home' || tier === 'mixed'){
+      if(minBattery > 40){
+        note.innerHTML = `<b>結論：續航餘裕充足。</b>以你目前的日常里程，即使假日長途出遊，每天回家充電後隔天出發時電量都能維持在安全範圍，不需要額外規劃公共充電站。`;
+      } else if (minBattery > 15){
+        note.innerHTML = `<b>結論：假日長途需留意。</b>平日通勤完全沒問題，但假日長途出遊那天電量會降到 ${Math.round(minBattery)}%，建議在路程中安排一次快充，或睡前確認充電樁已接上。`;
+      } else {
+        note.innerHTML = `<b>結論：建議規劃長途充電站。</b>假日長途行程會讓電量降到警戒線以下，出發前可以先用 AI 顧問幫你排一段沿途快充站，全程更安心。`;
+      }
+    } else {
+      note.innerHTML = `<b>結論：建議以公共充電站為主要方案。</b>你目前的居住條件較難安裝私人充電樁，一週下來電量會持續消耗到 ${Math.round(minBattery)}%，建議規劃每週 1–2 次固定的公共快充習慣，或與 AI 顧問討論通勤路線上的充電熱點。`;
+    }
+    document.getElementById('simSub').textContent = `依你填寫的每日 ${state.dailyKm} km 通勤與假日 ${state.weekendKm} km 長途，換算成 bZ4X 電量消耗如下：`;
+ 
+    let fit = 58;
+    if(tier === 'home') fit += 25;
+    else if(tier === 'mixed') fit += 15;
+    else fit -= 8;
+    if(state.dailyKm <= 60) fit += 8;
+    if(state.weekendKm <= 220) fit += 7;
+    if(minBattery < 20) fit -= 10;
+    fit = Math.max(35, Math.min(96, Math.round(fit)));
+    document.getElementById('fitScore').textContent = fit;
+    document.getElementById('fitTitle').textContent = fit >= 80 ? '你的日常情境與電動車高度契合' : (fit >= 65 ? '大多數日常情境都適合油轉電' : '可以油轉電，但充電方式是關鍵');
+    document.getElementById('fitDesc').textContent = tier === 'home'
+      ? '你具備固定充電條件，加上目前的里程需求，日常使用幾乎不需要特別改變習慣。接下來最值得看的，是五年成本差異。'
+      : (tier === 'mixed'
+        ? '你的里程條件適合電動車；若能在固定車位建立穩定充電方式，使用體驗會更完整。'
+        : '續航本身不是主要問題，真正影響體驗的是公共充電安排。後續建議把充電便利性一起納入評估。');
+    document.getElementById('rangeHeadline').textContent = minBattery >= 40 ? '你的日常里程在續航舒適圈內' : (minBattery >= 20 ? '平日輕鬆，長途日需要多一點規劃' : '長途日會進入建議充電區');
+    document.getElementById('rangeDetail').textContent = '本週約 ' + Math.round(totalKm) + ' km，最低模擬電量 ' + Math.round(minBattery) + '%；圖表把每天結束時的剩餘電量直接視覺化。';
+    document.getElementById('chargeHeadline').textContent = tier === 'home' ? '回家即充，最省心' : (tier === 'mixed' ? '固定車位，建立充電節奏' : '公共快充，路線規劃優先');
+    document.getElementById('chargeDetail').textContent = tier === 'home' ? '有家充條件時，多數日常不必特別繞去充電站。' : (tier === 'mixed' ? '若社區可完成充電設備建置，日常體驗會接近家充。' : '建議把通勤或採買沿線的充電點變成固定補能節點。');
+    state.sim = {tier, minBattery, totalKm, fit};
+  }
+ 
+  document.getElementById('toStep2').addEventListener('click', () => {
+    runTCO();
+    goTo(2);
+  });
+ 
+  /* ---------- step 2: TCO ---------- */
+  const fuelPriceEl = document.getElementById('fuelPrice');
+  const priceDiffEl = document.getElementById('priceDiff');
+  fuelPriceEl.addEventListener('input', () => {
+    state.fuelPrice = +fuelPriceEl.value;
+    document.getElementById('fuelPriceVal').textContent = state.fuelPrice;
+    runTCO();
+  });
+  priceDiffEl.addEventListener('input', () => {
+    state.priceDiff = +priceDiffEl.value;
+    document.getElementById('priceDiffVal').textContent = Math.round(state.priceDiff/10000);
+    runTCO();
+  });
+ 
+  function fmtNT(n){ return 'NT$ ' + Math.round(n).toLocaleString('zh-Hant'); }
+ 
+  function runTCO(){
+    const annualKm = (state.dailyKm*5 + state.weekendKm*2) * 52;
+    const annualFuelCost = (annualKm / FUEL_EFF) * state.fuelPrice;
+    const fuel5 = (annualFuelCost + FUEL_MAINT) * 5;
+ 
+    const tier = homeChargeTier();
+    const elecPrice = tier === 'home' ? HOME_ELEC_PRICE : (tier === 'mixed' ? MIXED_ELEC_PRICE : PUBLIC_ELEC_PRICE);
+    const annualElecCost = (annualKm / EV_EFF) * elecPrice;
+    const ev5 = state.priceDiff + (annualElecCost + EV_MAINT) * 5;
+ 
+    document.getElementById('fuelAnnualFuel').textContent = fmtNT(annualFuelCost);
+    document.getElementById('fuelSub').textContent = fmtNT(fuel5);
+    document.getElementById('fuelTotal').textContent = fmtNT(fuel5);
+ 
+    document.getElementById('evDiffLine').textContent = fmtNT(state.priceDiff);
+    document.getElementById('evAnnualFuel').textContent = fmtNT(annualElecCost);
+    document.getElementById('evTotal').textContent = fmtNT(ev5);
+    document.getElementById('annualKmView').textContent = Math.round(annualKm).toLocaleString('zh-Hant') + ' km／年';
+    const maxCost = Math.max(fuel5, ev5, 1);
+    document.getElementById('fuelCostBar').style.width = Math.max(18, fuel5/maxCost*100) + '%';
+    document.getElementById('evCostBar').style.width = Math.max(18, ev5/maxCost*100) + '%';
+ 
+    const diff = fuel5 - ev5;
+    const savingsBig = document.getElementById('savingsBig');
+    const savingsSub = document.getElementById('savingsSub');
+    if(diff >= 0){
+      savingsBig.textContent = fmtNT(diff) + ' 較省';
+      savingsSub.textContent = '五年累積下來，換購 bZ4X 估計比續用油車更省（已計入購車價差）';
+    } else {
+      savingsBig.textContent = fmtNT(-diff) + ' 較高';
+      savingsSub.textContent = '以目前假設的購車價差計算，五年持有成本略高於油車，隨里程增加會逐漸拉近';
+    }
+ 
+    state.tco = {annualKm, annualFuelCost, fuel5, annualElecCost, ev5, diff};
+  }
+ 
+  document.getElementById('toStep3').addEventListener('click', () => {
+    initChat();
+    goTo(3);
+  });
+ 
+  /* ---------- step 3: AI advisor — standalone demo ---------- */
+  const chatLog = document.getElementById('chatLog');
+  const chatInput = document.getElementById('chatInput');
+  const chatSend = document.getElementById('chatSend');
+  const suggestRow = document.getElementById('suggestRow');
+  let chatInited = false;
+
+  function addMsg(role, text){
+    const div = document.createElement('div');
+    div.className = 'msg ' + role;
+    div.textContent = text;
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return div;
+  }
+
+  function advisorReply(q){
+    const text = q.toLowerCase();
+    const tier = homeChargeTier();
+    const minB = state.sim ? Math.round(state.sim.minBattery) : 0;
+    const fit = state.sim ? state.sim.fit : 0;
+    const diff = state.tco ? state.tco.diff : 0;
+    const costLine = diff >= 0
+      ? `以你目前的里程與假設，五年試算 bZ4X 約可少 ${fmtNT(diff)}。`
+      : `以目前購車價差假設，五年 bZ4X 約多 ${fmtNT(-diff)}，里程越高時能源成本優勢會更明顯。`;
+
+    if(/山|坡|爬坡/.test(text)){
+      return `山路爬坡確實會增加瞬間耗電，但下坡時電動車可透過回生煞車回收部分能量。以你的假日行程約 ${state.weekendKm} km 來看，模擬最低電量仍約 ${minB}%；真正長途上山前，我會建議先把電充足並預留返程餘裕。`;
+    }
+    if(/車位|充電|充電樁|沒辦法/.test(text)){
+      if(tier === 'home') return `你的條件其實很適合家充：有固定車位時，可以把充電變成「回家插上、隔天出發」的日常習慣。依這次模擬，你的油轉電適配度是 ${fit} 分，充電便利性是主要加分項。`;
+      if(tier === 'mixed') return `你有固定車位，關鍵會是社區是否能完成充電設備申請與施工；一旦建立固定充電方式，日常使用會接近家充情境。建議試乘時同步請顧問協助確認社區充電建置流程。`;
+      return `沒有固定車位不代表不能用電動車，但使用方式會不同。依你的條件，建議先確認住家、公司或固定採買路線上是否有可靠的公共充電點，再決定是否符合你的生活節奏。`;
+    }
+    if(/補助|政府|稅/.test(text)){
+      return `補助與稅費優惠會依年度、地區與政策調整，所以這個 Demo 沒有把特定補助金額直接算進去，避免讓試算失真。正式評估時應以當期政府與 TOYOTA 官方公告為準，再把可適用項目加入五年成本比較。`;
+    }
+    if(/保養|維修/.test(text)){
+      return `這份試算目前用油車每年 NT$8,000、電動車每年 NT$3,000 作示意，主要反映電動車動力系統的例行保養項目通常較少。實際保養仍要看里程、耗材與原廠保養週期，但你可以把「能源＋保養」一起看，而不是只比較車價。`;
+    }
+    if(/省|划算|成本|價格|貴|錢/.test(text)){
+      return costLine + ` 你的年里程約 ${state.tco ? Math.round(state.tco.annualKm).toLocaleString('zh-Hant') : '—'} km；你也可以回到上一頁調整油價與購車價差，看看臨界點怎麼變。`;
+    }
+    if(/續航|沒電|里程|長途/.test(text)){
+      return `依你填寫的使用情境，本週模擬總里程約 ${state.sim ? Math.round(state.sim.totalKm) : '—'} km，單日結束最低電量約 ${minB}%。${minB >= 40 ? '目前屬於相對充裕的使用情境。' : '長途日建議預先安排補能點，會比單看官方續航數字更實際。'}`;
+    }
+    if(/適合|推薦|該不該|要不要/.test(text)){
+      return `系統依你的里程與充電條件算出的油轉電適配度是 ${fit} 分；這不是替你決定要不要換車，而是把最重要的條件攤開來看。對你而言，最值得確認的是「${tier === 'public' ? '公共充電是否能融入固定生活路線' : '實際試乘感受與五年成本是否符合期待'}」。`;
+    }
+    return `我會先從你的真實情境回答：每天約 ${state.dailyKm} km、假日長途約 ${state.weekendKm} km，油轉電適配度 ${fit} 分。你可以問我續航、充電、五年成本、保養或補助，我會用剛才的診斷結果一起判斷。`;
+  }
+
+  function initChat(){
+    if(chatInited) return;
+    chatInited = true;
+    const opener = state.mood === 'anxious'
+      ? `嗨，我已經看過你的用車診斷。你每天大約開 ${state.dailyKm} 公里，模擬最低電量約 ${state.sim ? Math.round(state.sim.minBattery) : '—'}%。不用先做決定，你最擔心續航、充電，還是換車成本？`
+      : `嗨，我整理好你的數據了：油轉電適配度 ${state.sim ? state.sim.fit : '—'} 分；五年油車約 ${state.tco?fmtNT(state.tco.fuel5):'—'}，bZ4X 約 ${state.tco?fmtNT(state.tco.ev5):'—'}。你想先拆哪個數字？`;
+    addMsg('ai', opener);
+
+    const suggestions = ['我常跑山路會不會很耗電？','沒有固定車位真的沒辦法用電動車嗎？','政府補助大概有多少？','跟現在的油車比，保養會差很多嗎？'];
+    suggestRow.innerHTML = '';
+    suggestions.forEach(txt => {
+      const chip = document.createElement('div');
+      chip.className = 'suggest-chip';
+      chip.textContent = txt;
+      chip.addEventListener('click', () => { chatInput.value = txt; sendChat(); });
+      suggestRow.appendChild(chip);
+    });
+  }
+
+  function sendChat(){
+    const text = chatInput.value.trim();
+    if(!text) return;
+    addMsg('user', text);
+    state.chatHistory.push({role:'user', content:text});
+    chatInput.value = '';
+    chatInput.disabled = true;
+    chatSend.disabled = true;
+
+    const typing = document.createElement('div');
+    typing.className = 'msg ai';
+    typing.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+    chatLog.appendChild(typing);
+    chatLog.scrollTop = chatLog.scrollHeight;
+
+    window.setTimeout(() => {
+      typing.remove();
+      const reply = advisorReply(text);
+      addMsg('ai', reply);
+      state.chatHistory.push({role:'assistant', content:reply});
+      chatInput.disabled = false;
+      chatSend.disabled = false;
+      chatInput.focus();
+    }, 520);
+  }
+  chatSend.addEventListener('click', sendChat);
+  chatInput.addEventListener('keydown', e => { if(e.key === 'Enter') sendChat(); });
+
+  document.getElementById('toStep4').addEventListener('click', () => goTo(4));
+ 
+  /* ---------- step 4: booking (mock) ---------- */
+  document.getElementById('bkSubmit').addEventListener('click', () => {
+    document.getElementById('bookForm').style.display = 'none';
+    document.getElementById('bookDone').style.display = 'block';
+  });
+ 
+  /* ---------- init ---------- */
+  goTo(0);
+})();
+</script>
+</body>
+</html>
+ 
