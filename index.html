@@ -416,6 +416,8 @@
         <div class="tco-total" id="fuelTotal">—</div><div class="cost-bar"><span id="fuelCostBar" style="width:100%"></span></div>
         <div class="tco-line"><span>年均油錢</span><span id="fuelAnnualFuel">—</span></div>
         <div class="tco-line"><span>年均保養</span><span>NT$ 8,000</span></div>
+        <div class="tco-line"><span>使用牌照稅／年</span><span>NT$ 15,210</span></div>
+        <div class="tco-line"><span>公路養管費／年</span><span>NT$ 7,200</span></div>
         <div class="tco-line"><span>5 年小計</span><span id="fuelSub">—</span></div>
       </div>
       <div class="tco-card ev">
@@ -424,6 +426,8 @@
         <div class="tco-line"><span>購車價差</span><span id="evDiffLine">—</span></div>
         <div class="tco-line"><span>年均電費</span><span id="evAnnualFuel">—</span></div>
         <div class="tco-line"><span>年均保養</span><span>NT$ 3,000</span></div>
+        <div class="tco-line"><span>使用牌照稅／年</span><span>NT$ 0*</span></div>
+        <div class="tco-line"><span>公路養管費／年</span><span>NT$ 0*</span></div>
       </div>
     </div>
  
@@ -432,7 +436,7 @@
       <span id="savingsSub">五年累積差額（含購車價差後估算）</span>
     </div>
  
-    <p class="hint" style="margin-bottom:30px;">＊試算採固定假設：油車油耗 13 km/L、bZ4X 效能 6.5 km/kWh、居家充電電價 NT$4／度；未計入政府補助與充電樁安裝費用，僅供提案示意，非正式報價。</p>
+    <p class="hint" style="margin-bottom:30px;">＊試算採固定假設：油車油耗 13 km/L、bZ4X 效能 6.5 km/kWh、居家充電電價 NT$4／度。RAV4 依 2,487 c.c. 級距計入使用牌照稅 NT$15,210／年及公路養管費 NT$7,200／年；依現行政策，純電動車使用牌照稅免徵至 2030 年底，公路養管費目前免徵。未公布期間不預設續免；未計入政府補助與充電樁安裝費用，僅供提案示意，非正式報價。</p>
  
     <div class="btn-row">
       <button class="btn btn-ghost" data-back="1">← 上一步</button>
@@ -524,6 +528,10 @@
   const PUBLIC_ELEC_PRICE = 9;
   const FUEL_MAINT = 8000;
   const EV_MAINT = 3000;
+  const CURRENT_LICENSE_TAX = 15210; // RAV4 2,487 c.c. 自用小客車
+  const CURRENT_ROAD_FEE = 7200; // 2401–3000 c.c. 自用小客車公路養管費
+  const EV_LICENSE_TAX = 0; // 現行純電動車免徵至 2030/12/31
+  const EV_ROAD_FEE = 0; // 現行電動汽車免徵
  
   /* ---------- stepper nav ---------- */
   const stepBtns = [...document.querySelectorAll('.step-btn')];
@@ -678,12 +686,13 @@
     priceDiffView.textContent = state.priceDiff > 0 ? ('bZ4X 高 ' + fmtNT(state.priceDiff)) : state.priceDiff < 0 ? ('bZ4X 低 ' + fmtNT(Math.abs(state.priceDiff))) : '兩車同價';
     const annualKm = (state.dailyKm*5 + state.weekendKm*2) * 52;
     const annualFuelCost = (annualKm / FUEL_EFF) * state.fuelPrice;
-    const fuel5 = (annualFuelCost + FUEL_MAINT) * 5;
+    const fuel5 = (annualFuelCost + FUEL_MAINT + CURRENT_LICENSE_TAX + CURRENT_ROAD_FEE) * 5;
  
     const tier = homeChargeTier();
     const elecPrice = tier === 'home' ? HOME_ELEC_PRICE : (tier === 'mixed' ? MIXED_ELEC_PRICE : PUBLIC_ELEC_PRICE);
     const annualElecCost = (annualKm / EV_EFF) * elecPrice;
-    const ev5 = state.priceDiff + (annualElecCost + EV_MAINT) * 5;
+    // Demo TCO uses current EV tax/fee treatment as the displayed baseline.
+    const ev5 = state.priceDiff + (annualElecCost + EV_MAINT + EV_LICENSE_TAX + EV_ROAD_FEE) * 5;
  
     document.getElementById('fuelAnnualFuel').textContent = fmtNT(annualFuelCost);
     document.getElementById('fuelSub').textContent = fmtNT(fuel5);
