@@ -401,7 +401,7 @@
         <option value="camry-l-legacy">CAMRY-L（歷史車款）</option>
         <option value="sienta-legacy">SIENTA（歷史車款）</option>
       </select>
-      <div class="hint">預設依 Toyota 已知的目前車款帶入；Demo 可切換其他車款，查看不同排氣量、車價與稅費對五年持有成本的影響。</div>
+      <div class="hint">預設依 Toyota 已知的目前車款帶入。已停產車款的持有稅費仍依原車排氣量計算；購車價格比較則改採 Toyota 現行同級／相近使用情境替代車款的高階售價。</div>
     </div>
  
     <div class="assump-grid">
@@ -549,14 +549,14 @@
     'rav4-hybrid': {name:'RAV4 Hybrid', engineCc:2487, fuel:'gasoline', referencePrice:1490000, priceBasis:'現行官網高階車型比較基準價'},
     'altis': {name:'ALTIS', engineCc:1798, fuel:'gasoline', referencePrice:815000, priceBasis:'現行汽油車型高階比較基準價'},
     'altis-hybrid': {name:'ALTIS Hybrid', engineCc:1798, fuel:'gasoline', referencePrice:895000, priceBasis:'現行 Hybrid 高階比較基準價'},
-    'yaris-legacy': {name:'YARIS', engineCc:1496, fuel:'gasoline', referencePrice:709000, priceBasis:'歷史車款參考價（2021 高階車型）'},
+    'yaris-legacy': {name:'YARIS', engineCc:1496, fuel:'gasoline', referencePrice:795000, priceBasis:'現行同級替代參考：YARiS CROSS 高階車型', substituteName:'YARiS CROSS'},
     'corolla-cross': {name:'COROLLA CROSS', engineCc:1798, fuel:'gasoline', referencePrice:869000, priceBasis:'現行汽油車型高階比較基準價'},
     'corolla-cross-hybrid': {name:'COROLLA CROSS Hybrid 旗艦', engineCc:1798, fuel:'gasoline', referencePrice:989000, priceBasis:'現行 Hybrid 高階比較基準價'},
     'corolla-cross-gr-hybrid': {name:'COROLLA CROSS Hybrid GR SPORT', engineCc:1798, fuel:'gasoline', referencePrice:1035000, priceBasis:'現行 Hybrid GR SPORT 比較基準價'},
     'vios': {name:'VIOS', engineCc:1496, fuel:'gasoline', referencePrice:675000, priceBasis:'現行官網高階車型比較基準價'},
-    'wish-legacy': {name:'WISH', engineCc:1987, fuel:'gasoline', referencePrice:879000, priceBasis:'歷史車款參考價（停產前高階車型）'},
-    'camry-l-legacy': {name:'CAMRY-L', engineCc:1987, fuel:'gasoline', referencePrice:849000, priceBasis:'歷史國產 CAMRY 2.0 參考價'},
-    'sienta-legacy': {name:'SIENTA', engineCc:1798, fuel:'gasoline', referencePrice:915000, priceBasis:'歷史車款參考價（高階車型）'}
+    'wish-legacy': {name:'WISH', engineCc:1987, fuel:'gasoline', referencePrice:2960000, priceBasis:'現行多人乘載替代參考：SIENNA 高階車型', substituteName:'SIENNA'},
+    'camry-l-legacy': {name:'CAMRY-L', engineCc:1987, fuel:'gasoline', referencePrice:1250000, priceBasis:'現行同級替代參考：CAMRY 高階車型', substituteName:'CAMRY'},
+    'sienta-legacy': {name:'SIENTA', engineCc:1798, fuel:'gasoline', referencePrice:2960000, priceBasis:'現行多人乘載替代參考：SIENNA 高階車型', substituteName:'SIENNA'}
   };
   const BZ4X = {name:'bZ4X', fuel:'electric', referencePrice:1280000};
 
@@ -739,14 +739,14 @@
     const evLicenseTax = 0; // current BEV exemption through 2030/12/31
     const evRoadFee = 0; // electric vehicles currently exempt
     state.priceDiff = BZ4X.referencePrice - vehicle.referencePrice;
-    document.getElementById('currentVehicleName').textContent = vehicle.name;
+    document.getElementById('currentVehicleName').textContent = vehicle.substituteName ? (vehicle.substituteName + '（' + vehicle.name + ' 替代參考）') : vehicle.name;
     document.getElementById('currentTcoVehicleName').textContent = vehicle.name;
     document.getElementById('currentVehiclePrice').textContent = fmtNT(vehicle.referencePrice);
     document.getElementById('currentPriceBasis').textContent = vehicle.priceBasis;
     document.getElementById('bz4xPrice').textContent = fmtNT(BZ4X.referencePrice);
     document.getElementById('currentLicenseTax').textContent = fmtNT(currentLicenseTax);
     document.getElementById('currentRoadFee').textContent = fmtNT(currentRoadFee);
-    document.getElementById('tcoPolicyNote').textContent = '＊' + vehicle.name + ' 依 ' + vehicle.engineCc.toLocaleString('zh-Hant') + ' c.c. 自動套用自用小客車級距；價格基準為「' + vehicle.priceBasis + '」。使用牌照稅 ' + fmtNT(currentLicenseTax) + '／年、公路養管費 ' + fmtNT(currentRoadFee) + '／年。依現行政策，純電動車使用牌照稅免徵至 2030 年底，公路養管費目前免徵；未公布期間不預設續免。另採固定假設：油車油耗 13 km/L、bZ4X 效能 6.5 km/kWh；未計入政府補助與充電樁安裝費用，僅供提案示意。';
+    document.getElementById('tcoPolicyNote').textContent = '＊' + vehicle.name + ' 依 ' + vehicle.engineCc.toLocaleString('zh-Hant') + ' c.c. 自動套用自用小客車級距；' + (vehicle.substituteName ? '因原車已停產，購車比較改採「' + vehicle.priceBasis + '」，此為 Demo 比較設定，非 Toyota 官方繼任車款宣告。' : '價格基準為「' + vehicle.priceBasis + '」。') + '使用牌照稅 ' + fmtNT(currentLicenseTax) + '／年、公路養管費 ' + fmtNT(currentRoadFee) + '／年。依現行政策，純電動車使用牌照稅免徵至 2030 年底，公路養管費目前免徵；未公布期間不預設續免。另採固定假設：油車油耗 13 km/L、bZ4X 效能 6.5 km/kWh；未計入政府補助與充電樁安裝費用，僅供提案示意。';
     const priceDiffView = document.getElementById('purchasePriceDiff');
     priceDiffView.textContent = state.priceDiff > 0 ? ('bZ4X 高 ' + fmtNT(state.priceDiff)) : state.priceDiff < 0 ? ('bZ4X 低 ' + fmtNT(Math.abs(state.priceDiff))) : '兩車同價';
     const annualKm = (state.dailyKm*5 + state.weekendKm*2) * 52;
