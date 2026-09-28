@@ -234,6 +234,42 @@
  
   footer{border-top:1px solid var(--line-dark);padding:24px 0;text-align:center;}
   footer p{margin:0;font-size:12.5px;color:var(--grey-text-dark);}
+
+  /* ---- TCO vehicle selector ---- */
+  .vehicle-select-card{
+    position:relative;background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+    border:1px solid var(--line-dark);border-radius:16px;padding:16px 18px;
+    transition:border-color .18s,box-shadow .18s,background .18s;
+  }
+  .vehicle-select-card:focus-within{
+    border-color:rgba(235,10,30,.8);box-shadow:0 0 0 3px rgba(235,10,30,.10);
+    background:linear-gradient(135deg,rgba(235,10,30,.055),rgba(255,255,255,.02));
+  }
+  .vehicle-select-card .select-kicker{
+    display:flex;align-items:center;gap:7px;color:var(--grey-text-dark);font-size:11px;
+    letter-spacing:.09em;text-transform:uppercase;margin-bottom:8px;
+  }
+  .vehicle-select-card .select-kicker:before{
+    content:"";width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px rgba(235,10,30,.12);
+  }
+  .vehicle-select-wrap{position:relative;}
+  .vehicle-select-wrap select{
+    width:100%;appearance:none;-webkit-appearance:none;background:#171719;
+    border:1px solid #3a3a3f;border-radius:11px;color:#fff;font-family:inherit;
+    font-size:15px;font-weight:650;padding:13px 46px 13px 14px;outline:none;cursor:pointer;
+  }
+  .vehicle-select-wrap select:hover{border-color:#55555c;}
+  .vehicle-select-wrap select:focus{border-color:var(--red);}
+  .vehicle-select-wrap select option{background:#1b1b1e;color:#f5f5f5;}
+  .vehicle-select-wrap:after{
+    content:"⌄";position:absolute;right:15px;top:50%;transform:translateY(-55%);
+    color:#ff727b;font-size:20px;font-weight:700;pointer-events:none;
+  }
+  .vehicle-select-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .vehicle-select-meta span{
+    font-size:11.5px;color:#c9c9ce;background:rgba(255,255,255,.045);
+    border:1px solid var(--line-dark);border-radius:999px;padding:5px 9px;
+  }
 </style>
 </head>
 <body>
@@ -388,7 +424,10 @@
 
     <div class="field" style="margin-bottom:22px;">
       <label for="tcoVehicleSelect">比較參考車款</label>
-      <select id="tcoVehicleSelect" style="width:100%;">
+      <div class="vehicle-select-card">
+        <div class="select-kicker">TOYOTA OWNER REFERENCE</div>
+        <div class="vehicle-select-wrap">
+      <select id="tcoVehicleSelect">
         <option value="rav4-hybrid">RAV4 Hybrid（目前車主）</option>
         <option value="rav4-gasoline">RAV4 汽油</option>
         <option value="altis-gasoline">ALTIS 汽油</option>
@@ -404,6 +443,9 @@
         <option value="camry-l-legacy">CAMRY-L（歷史車款）</option>
         <option value="sienta-legacy">SIENTA（歷史車款）</option>
       </select>
+        </div>
+        <div class="vehicle-select-meta"><span>車價自動帶入</span><span>排氣量級距</span><span>油耗連動</span><span>稅費連動</span></div>
+      </div>
       <div class="hint">預設依 Toyota 已知的目前車款帶入。已停產車款的持有稅費仍依原車排氣量計算；購車價格比較則改採 Toyota 現行同級／相近使用情境替代車款的高階售價。</div>
     </div>
  
