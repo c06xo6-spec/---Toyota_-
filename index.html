@@ -180,6 +180,8 @@
   .tco-savings{background:var(--red);border-radius:14px;padding:22px 24px;text-align:center;margin-bottom:30px;}
   .tco-savings b{display:block;font-size:32px;font-weight:900;}
   .tco-savings span{font-size:13px;color:#ffe3e4;}
+  .tco-savings.running-savings{background:linear-gradient(135deg,#087f5b,#0a9b70);box-shadow:0 10px 28px rgba(8,127,91,.18);}
+  .tco-savings.running-savings span{color:#dcfff3;}
   .tco-headline{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:24px;padding:20px 22px;border:1px solid var(--line-dark);border-radius:14px;background:#111113;}
   .tco-headline .mini-label{font-size:11px;color:var(--grey-text-dark);letter-spacing:.08em;font-weight:800;margin-bottom:5px;}
   .tco-headline strong{font-size:24px;line-height:1.3;}
@@ -500,7 +502,7 @@
       <span id="savingsSub">五年累積差額（含購車價差後估算）</span>
     </div>
 
-    <div class="tco-savings" style="margin-top:12px;">
+    <div class="tco-savings running-savings" style="margin-top:12px;">
       <div style="display:flex;flex-direction:column;gap:4px;">
         <span style="font-size:11px;letter-spacing:.09em;">5-YEAR RUNNING COST SAVINGS</span>
         <b id="runningSavingsBig">—</b>
